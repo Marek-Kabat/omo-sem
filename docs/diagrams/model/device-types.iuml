@@ -1,0 +1,61 @@
+package "device" {
+  ' --- konkrétní spotřebiče ---
+  class Fridge {
+    - food : List<FoodItem>
+    - capacity : int
+  }
+  class FoodItem <<record>> {
+    + name : String
+    + portions : int
+  }
+  class Stove
+  class Microwave
+  class Television {
+    - channel : int
+  }
+  class WashingMachine {
+    - programTicks : int
+  }
+  class Dishwasher {
+    - programTicks : int
+  }
+  class CoffeeMachine {
+    - capsules : Deque<CoffeeCapsule>
+  }
+  class CoffeeCapsule <<record>> {
+    + flavour : String
+  }
+  class CdPlayer {
+    - insertedCd : Cd
+  }
+  class Cd <<record>> {
+    + title : String
+  }
+  class Light
+  class AirConditioner {
+    - targetTemperature : double
+  }
+  class Computer
+  class GasBoiler {
+    - targetTemperature : double
+  }
+
+  Fridge -up-|> Device
+  Stove -up-|> Device
+  Microwave -up-|> Device
+  Television -up-|> Device
+  WashingMachine -up-|> Device
+  Dishwasher -up-|> Device
+  CoffeeMachine -up-|> Device
+  CdPlayer -up-|> Device
+  Light -up-|> Device
+  AirConditioner -up-|> Device
+  Computer -up-|> Device
+  GasBoiler -up-|> Device
+  Fridge ..|> ContentHolder
+  CoffeeMachine ..|> ContentHolder
+  CdPlayer ..|> ContentHolder
+  Fridge *-- "*" FoodItem
+  CoffeeMachine *-- "*" CoffeeCapsule
+  CdPlayer o-- "0..1" Cd
+}

@@ -1,0 +1,14 @@
+@startuml 03-device-state
+!include common.iuml
+title Stav zařízení (State) a senzory
+!include model/device-state.iuml
+!include model/sensor.iuml
+
+class Device <<external>>
+class Weather <<external>>
+class EventType <<external>>
+Device --> "1" DeviceState : state
+Sensor -up-|> Device
+Sensor --> "1" Weather
+Sensor ..> EventType
+@enduml

@@ -1,0 +1,19 @@
+@startuml 05-events
+!include common.iuml
+skinparam linetype polyline
+title Události – Observer (EventBus) a Chain of Responsibility
+!include model/event.iuml
+
+class Room <<external>>
+class Device <<external>>
+class Inhabitant <<external>>
+class SmartHomeFacade <<external>>
+class Task <<external>>
+Device ..|> EventSource
+Inhabitant ..|> EventSource
+Event --> "0..1" Room : location
+InhabitantEventHandler --> "1" Inhabitant
+InhabitantEventHandler ..> Task : <<create>>
+DeviceEventHandler --> "1" Device
+SystemEventHandler --> "1" SmartHomeFacade
+@enduml

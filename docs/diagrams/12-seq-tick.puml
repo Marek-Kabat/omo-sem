@@ -1,0 +1,54 @@
+@startuml 12-seq-tick
+!include common.iuml
+title Průběh jednoho kroku simulace (tick)
+participant "Simulation" as S
+participant "SimulationClock" as C
+participant "Weather" as W
+participant "Device / Sensor" as D
+participant "Inhabitant" as I
+participant "DemandMonitor" as M
+participant "EventBus" as B
+participant "EventHandler\n(řetěz)" as H
+
+S -> C : advance()
+activate C
+C -> W : onTick(t)
+note right: změna teploty, větru,\npravděpodobnost bouřky
+C -> D : onTick(t)
+activate D
+D -> D : meter.record(spotřeba dle stavu)
+D -> D : durability.wear(load)
+opt senzor překročil práh / zařízení se rozbilo
+  D -> B : publish(event)
+end
+deactivate D
+C -> I : onTick(t)
+activate I
+alt má čekající úkol (Task)
+  I -> I : provádí úkol s nejvyšší prioritou
+else pokračuje aktuální aktivita
+  I -> I : currentActivity.progress()
+else aktivita skončila
+  I -> I : strategy.chooseNext()\n(50 % zařízení / 50 % sport)
+  opt zdroj není volný
+    I -> M : reportWaiting(resource)
+    I -> I : status = WAITING
+  end
+end
+opt náhodná událost (miminko, mazlíček)
+  I -> B : publish(event)
+end
+deactivate I
+C -> M : onTick(t)
+opt dlouhodobý nedostatek zdroje
+  M -> B : publish(RESOURCE_SHORTAGE)
+end
+deactivate C
+S -> B : dispatchPending()
+activate B
+loop pro každou čekající událost
+  B -> H : onEvent(e)
+  H -> H : canHandle? -> handle / next
+end
+deactivate B
+@enduml

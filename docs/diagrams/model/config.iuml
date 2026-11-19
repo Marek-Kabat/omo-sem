@@ -1,0 +1,83 @@
+package "config" {
+  interface HouseConfigLoader <<Strategy>> {
+    + load() : HouseConfigDto
+  }
+  class JsonHouseConfigLoader {
+    - path : Path
+    - mapper : ObjectMapper
+  }
+  class DefaultHouseConfig
+
+  class HouseDirector <<Builder Director>> {
+    - deviceFactory : DeviceFactory
+    + construct(dto : HouseConfigDto, builder : HouseBuilder) : House
+    - createInhabitant(dto : InhabitantDto) : Inhabitant
+  }
+
+  class HouseConfigDto {
+    + name : String
+    + floors : List<FloorDto>
+    + outsideAreas : List<RoomDto>
+    + inhabitants : List<InhabitantDto>
+    + equipment : List<EquipmentDto>
+    + simulation : SimulationSettingsDto
+  }
+  class FloorDto {
+    + level : int
+    + name : String
+    + rooms : List<RoomDto>
+  }
+  class RoomDto {
+    + id : String
+    + name : String
+    + type : RoomType
+    + windows : List<WindowDto>
+    + devices : List<DeviceDto>
+  }
+  class WindowDto {
+    + id : String
+    + blind : boolean
+    + outdoorBlind : boolean
+  }
+  class DeviceDto {
+    + id : String
+    + type : DeviceType
+    + name : String
+    + essential : boolean
+    + lifetimeTicks : int
+    + params : Map<String, Object>
+  }
+  class InhabitantDto {
+    + id : String
+    + name : String
+    + kind : String
+    + role : String
+    + age : int
+    + startRoom : String
+    + permissions : Map<DeviceType, List<DeviceAction>>
+    + sports : List<SportType>
+    + repairSkills : List<DeviceType>
+  }
+  class EquipmentDto {
+    + id : String
+    + type : SportType
+    + name : String
+  }
+  class SimulationSettingsDto {
+    + ticks : int
+    + tickMinutes : int
+    + seed : long
+  }
+
+  JsonHouseConfigLoader ..|> HouseConfigLoader
+  DefaultHouseConfig ..|> HouseConfigLoader
+  HouseConfigLoader ..> HouseConfigDto : <<create>>
+  HouseConfigDto *-- "*" FloorDto
+  HouseConfigDto *-- "*" InhabitantDto
+  HouseConfigDto *-- "*" EquipmentDto
+  HouseConfigDto *-- "1" SimulationSettingsDto
+  FloorDto *-- "*" RoomDto
+  RoomDto *-- "*" WindowDto
+  RoomDto *-- "*" DeviceDto
+  HouseDirector ..> HouseConfigDto
+}

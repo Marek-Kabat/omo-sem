@@ -1,0 +1,18 @@
+@startuml 07-reports
+!include common.iuml
+title Reporty – Template Method, Visitor, Factory
+!include model/report.iuml
+
+class HouseVisitor <<external>>
+class House <<external>>
+class Event <<external>>
+class ActivityLog <<external>>
+class Simulation <<external>>
+HouseConfigurationVisitor ..|> HouseVisitor
+ConsumptionVisitor ..|> HouseVisitor
+HouseConfigurationReport --> House
+ConsumptionReport --> House
+EventReport --> "*" Event
+ActivityAndUsageReport --> ActivityLog
+ReportFactory ..> Simulation
+@enduml

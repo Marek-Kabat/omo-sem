@@ -1,0 +1,21 @@
+@startuml 06-api
+!include common.iuml
+skinparam linetype polyline
+title API pro ovládání zařízení – Command, Proxy, Facade
+!include model/api.iuml
+
+class DeviceApi <<external>>
+class Device <<external>>
+class Actor <<external>>
+class ContentHolder <<external>>
+class House <<external>>
+class ActivityLog <<external>>
+DeviceAccessProxy ..|> DeviceApi
+Device ..|> DeviceApi
+DeviceAccessProxy --> "1" Device : target
+DeviceAccessProxy --> "1" Actor
+ContentAccessProxy ..|> ContentHolder
+SystemActor ..|> Actor
+SmartHomeFacade --> "1" House
+CommandExecutor --> "1" ActivityLog
+@enduml

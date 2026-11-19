@@ -1,0 +1,53 @@
+package "simulation" {
+  class Simulation <<Singleton>> {
+    - {static} instance : Simulation
+    - house : House
+    - clock : SimulationClock
+    - weather : Weather
+    - eventBus : EventBus
+    - executor : CommandExecutor
+    - facade : SmartHomeFacade
+    - activityLog : ActivityLog
+    - random : Random
+    - Simulation()
+    + {static} getInstance() : Simulation
+    + init(loader : HouseConfigLoader) : void
+    + run(ticks : int) : void
+    - step() : void
+    + generateReports(outputDir : Path) : void
+    + getHouse() : House
+    + getClock() : SimulationClock
+    + getEventBus() : EventBus
+    + getRandom() : Random
+  }
+
+  class SimulationClock {
+    - currentTick : long
+    - tickLength : Duration
+    - startTime : LocalDateTime
+    - listeners : List<TickListener>
+    + advance() : void
+    + register(listener : TickListener) : void
+    + getCurrentTick() : long
+    + getCurrentTime() : LocalDateTime
+  }
+
+  interface TickListener {
+    + onTick(tick : long) : void
+  }
+
+  class Weather {
+    - outsideTemperature : double
+    - windSpeed : double
+    - stormApproaching : boolean
+    + onTick(tick : long) : void
+    + getOutsideTemperature() : double
+    + getWindSpeed() : double
+    + isStormApproaching() : boolean
+  }
+
+  Simulation *-- "1" SimulationClock
+  Simulation *-- "1" Weather
+  SimulationClock o-- "*" TickListener : notifikuje >
+  Weather ..|> TickListener
+}

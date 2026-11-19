@@ -1,0 +1,92 @@
+package "activity" {
+  interface Activity {
+    + begin(performer : Inhabitant) : boolean
+    + progress() : boolean
+    + end() : void
+    + getDescription() : String
+  }
+
+  abstract class AbstractActivity {
+    # performer : Inhabitant
+    # remainingTicks : int
+    + progress() : boolean
+  }
+
+  class DeviceUsageActivity {
+    - deviceType : DeviceType
+    - device : Device
+    - facade : SmartHomeFacade
+    - executor : CommandExecutor
+  }
+
+  class SportActivity {
+    - sportType : SportType
+    - equipment : SportEquipment
+    - pool : EquipmentPool
+  }
+
+  class IdleActivity
+
+  class Task <<Command>> {
+    - priority : TaskPriority
+    - event : Event
+    - action : Consumer<Inhabitant>
+    - description : String
+    + compareTo(o : Task) : int
+  }
+
+  class RepairTask {
+    - device : Device
+  }
+
+  enum TaskPriority {
+    LEISURE
+    NORMAL
+    HIGH
+    CRITICAL
+  }
+
+  interface ActivityStrategy <<Strategy>> {
+    + chooseNext(i : Inhabitant, house : House, rnd : Random) : Activity
+  }
+
+  class BalancedLeisureStrategy {
+    - sportRatio : double = 0.5
+  }
+  class BabyStrategy
+  class PetStrategy
+
+  class ActivityLog {
+    - records : List<ActivityRecord>
+    + record(r : ActivityRecord) : void
+    + getRecords() : List<ActivityRecord>
+    + countUsages() : Map<String, Map<String, Long>>
+  }
+
+  class ActivityRecord <<record>> {
+    + actorName : String
+    + targetId : String
+    + targetKind : TargetKind
+    + action : String
+    + tick : long
+  }
+
+  enum TargetKind {
+    DEVICE
+    SPORT_EQUIPMENT
+  }
+
+  AbstractActivity ..|> Activity
+  ActivityRecord --> TargetKind
+  DeviceUsageActivity -up-|> AbstractActivity
+  SportActivity -up-|> AbstractActivity
+  IdleActivity -up-|> AbstractActivity
+  Task -up-|> AbstractActivity
+  RepairTask -up-|> Task
+  Task --> TaskPriority
+  BalancedLeisureStrategy ..|> ActivityStrategy
+  BabyStrategy ..|> ActivityStrategy
+  PetStrategy ..|> ActivityStrategy
+  ActivityStrategy ..> Activity : <<create>>
+  ActivityLog *-- "*" ActivityRecord
+}

@@ -1,0 +1,28 @@
+package "device.sensor" {
+  abstract class Sensor {
+    # weather : Weather
+    - threshold : double
+    - lastValue : double
+    # {abstract} measure() : double
+    # {abstract} evaluate(value : double) : Optional<EventType>
+    # onTickSpecific(tick : long) : void
+    + getLastValue() : double
+  }
+  class TemperatureSensor
+  class WindSensor
+  class HumiditySensor {
+    - leakProbability : double
+  }
+  class WeatherStation
+  class CircuitBreaker {
+    - tripped : boolean
+    - tripProbability : double
+    + reset() : void
+    + isTripped() : boolean
+  }
+  TemperatureSensor -up-|> Sensor
+  WindSensor -up-|> Sensor
+  HumiditySensor -up-|> Sensor
+  WeatherStation -up-|> Sensor
+  CircuitBreaker -up-|> Sensor
+}

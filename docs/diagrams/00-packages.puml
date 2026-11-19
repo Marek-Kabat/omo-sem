@@ -1,0 +1,44 @@
+@startuml 00-packages
+!include common.iuml
+skinparam linetype polyline
+title Přehled balíčků a závislostí
+package simulation
+package config
+package house
+package device
+package "device.state" as dstate
+package "device.sensor" as dsensor
+package inhabitant
+package activity
+package sport
+package event
+package api
+package report
+package shop
+
+simulation ..> config
+simulation ..> house
+simulation ..> event
+simulation ..> api
+simulation ..> report
+config ..> house : HouseBuilder
+config ..> device : DeviceFactory
+house ..> device
+house ..> inhabitant
+house ..> sport
+device ..> dstate
+dsensor ..> device
+dsensor ..> simulation : Weather
+inhabitant ..> activity
+activity ..> api
+activity ..> sport
+api ..> device
+event ..> inhabitant
+event ..> api : SmartHomeFacade
+device ..> event : publikuje
+report ..> house
+report ..> event
+report ..> activity
+shop ..> device
+shop ..> sport
+@enduml

@@ -1,0 +1,64 @@
+' Vazby přes hranice balíčků (používá je celkový diagram)
+Device ..|> HouseComponent
+Device ..|> TickListener
+Device ..|> EventSource
+Room "1" o-- "*" Device : devices
+Device --> "1" DeviceState : state
+Device ..> LoadLevel
+Sensor -up-|> Device
+Sensor --> "1" Weather
+
+Inhabitant ..|> HouseComponent
+Inhabitant ..|> TickListener
+Inhabitant ..|> EventSource
+House *-- "*" Inhabitant
+Room o-- "*" Inhabitant : occupants
+House *-- "1" EquipmentPool
+EquipmentPool --> "1" Room : storage
+SportEquipment ..|> HouseComponent
+Inhabitant --> "1" ActivityStrategy
+Inhabitant --> "0..1" Activity : current
+Inhabitant o-- "*" Task : pending
+PermissionSet ..> DeviceAction
+PermissionSet ..> SportType
+Person --> "*" DeviceType : repairSkills
+
+DeviceUsageActivity --> "0..1" Device
+SportActivity --> "0..1" SportEquipment
+SportActivity --> "1" EquipmentPool
+RepairTask --> "1" Device
+Task --> "0..1" Event
+
+Event --> "0..1" Room : location
+InhabitantEventHandler --> "1" Inhabitant
+DeviceEventHandler --> "1" Device
+SystemEventHandler --> "1" SmartHomeFacade
+
+DeviceAccessProxy ..|> DeviceApi
+DeviceAccessProxy --> "1" Device : target
+DeviceAccessProxy --> "1" Actor
+ContentAccessProxy ..|> ContentHolder
+SystemActor ..|> Actor
+SmartHomeFacade --> "1" House
+CommandExecutor --> "1" ActivityLog
+
+HouseConfigurationVisitor ..|> HouseVisitor
+ConsumptionVisitor ..|> HouseVisitor
+EventReport ..> Event
+ActivityAndUsageReport --> ActivityLog
+
+Simulation *-- "1" House
+Simulation *-- "1" EventBus
+Simulation *-- "1" CommandExecutor
+Simulation *-- "1" SmartHomeFacade
+Simulation *-- "1" ActivityLog
+Simulation *-- "1" DemandMonitor
+Simulation *-- "1" DeviceShop
+Simulation ..> HouseConfigLoader
+Simulation ..> ReportFactory
+HouseDirector ..> HouseBuilder
+HouseDirector ..> DeviceFactory
+
+DemandMonitor ..|> TickListener
+DemandMonitor ..> EventBus : RESOURCE_SHORTAGE
+DeviceShop ..> DeviceFactory

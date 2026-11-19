@@ -1,0 +1,19 @@
+@startuml 02-devices
+!include common.iuml
+skinparam linetype polyline
+title Zařízení – jádro modelu (spotřeba, životnost, návod, továrna)
+!include model/device.iuml
+
+class Room <<external>>
+class DeviceState <<external>>
+class Sensor <<external>>
+class HouseComponent <<external>>
+class TickListener <<external>>
+class EventSource <<external>>
+Device ..|> HouseComponent
+Device ..|> TickListener
+Device ..|> EventSource
+Room "1" o-- "*" Device
+Device --> "1" DeviceState : state
+Sensor -up-|> Device
+@enduml

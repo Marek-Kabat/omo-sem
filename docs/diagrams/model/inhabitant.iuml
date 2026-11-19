@@ -1,0 +1,82 @@
+package "inhabitant" {
+  interface Actor {
+    + getName() : String
+    + getPermissions() : PermissionSet
+  }
+
+  abstract class Inhabitant <<Template Method>> {
+    - id : String
+    - name : String
+    - currentRoom : Room
+    - status : InhabitantStatus
+    - permissions : PermissionSet
+    - strategy : ActivityStrategy
+    - currentActivity : Activity
+    - pendingTasks : PriorityQueue<Task>
+    - waitingTicks : int
+    + getCurrentRoom() : Room
+    + getStatus() : InhabitantStatus
+    + moveTo(room : Room) : void
+    + assignTask(task : Task) : void
+    + isAtHome() : boolean
+    + isAvailableFor(task : Task) : boolean
+    + onTick(tick : long) : void
+    # {abstract} maybeGenerateEvent(rnd : Random) : Optional<Event>
+    + accept(v : HouseVisitor) : void
+  }
+
+  class Person {
+    - role : FamilyRole
+    - age : int
+    - repairSkills : Set<DeviceType>
+    + getRole() : FamilyRole
+    + canRepair(type : DeviceType) : boolean
+  }
+
+  class Pet {
+    - species : PetSpecies
+    + getSpecies() : PetSpecies
+  }
+
+  enum FamilyRole {
+    FATHER
+    MOTHER
+    SON
+    DAUGHTER
+    BABY
+    GRANDMOTHER
+  }
+
+  enum PetSpecies {
+    CAT
+    DOG
+    HAMSTER
+  }
+
+  enum InhabitantStatus {
+    IDLE
+    USING_DEVICE
+    DOING_SPORT
+    WAITING
+    HANDLING_EVENT
+    REPAIRING
+    SLEEPING
+  }
+
+  class PermissionSet {
+    - allowed : Map<DeviceType, Set<DeviceAction>>
+    - allowedSports : Set<SportType>
+    + isAllowed(type : DeviceType, action : DeviceAction) : boolean
+    + canDoSport(type : SportType) : boolean
+    + usableDeviceTypes() : Set<DeviceType>
+    + {static} builder() : PermissionSet.Builder
+  }
+
+  Inhabitant ..|> Actor
+  Person -up-|> Inhabitant
+  Pet -up-|> Inhabitant
+  Inhabitant *-- "1" PermissionSet
+  Inhabitant --> InhabitantStatus
+  Person --> FamilyRole
+  Pet --> PetSpecies
+}

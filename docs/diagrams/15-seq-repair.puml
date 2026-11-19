@@ -1,0 +1,33 @@
+@startuml 15-seq-repair
+!include common.iuml
+title Rozbití a oprava zařízení (bonus – životnost, Virtual Proxy)
+participant "WashingMachine" as W
+participant "Durability" as DU
+participant "EventBus" as B
+participant "Handler: Táta" as HT
+actor "Táta (Person)" as T
+participant "RepairTask" as R
+participant "ManualProxy" as MP
+participant "RealManual" as RM
+participant "CommandExecutor" as E
+
+W -> DU : wear(FULL, rnd)
+DU --> W : true (vyčerpáno)
+W -> W : breakDown() → BrokenState
+W -> B : publish(DEVICE_BROKEN)
+B -> HT : onEvent(e)
+HT -> HT : canHandle: táta.canRepair(WASHING_MACHINE)\n&& je doma
+HT -> T : assignTask(new RepairTask(pračka), HIGH)
+note right of T: úkol přeruší volnočasovou\naktivitu (vyšší priorita)
+T -> R : begin(táta)
+R -> T : moveTo(koupelna)
+R -> MP : getRepairTicks()
+MP -> RM ** : načte návod až teď (lazy)
+MP -> RM : getRepairTicks()
+RM --> R : 4
+...4 ticky opravy...
+R -> E : execute(new RepairCommand(táta, pračka))
+E -> W : repair(táta) → OffState
+W -> DU : restore(0.8)
+W -> B : publish(DEVICE_REPAIRED)
+@enduml

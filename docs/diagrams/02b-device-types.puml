@@ -1,0 +1,8 @@
+@startuml 02b-device-types
+!include common.iuml
+skinparam linetype polyline
+title Konkrétní typy spotřebičů a zařízení s obsahem
+abstract class Device <<external>>
+interface "ContentHolder<T>" as ContentHolder <<external>>
+!include model/device-types.iuml
+@enduml

@@ -1,0 +1,43 @@
+@startuml 13-seq-use-device
+!include common.iuml
+title Uživatelská interakce: syn si pustí televizi (Command + Proxy + State)
+actor "Tomáš (Person)" as P
+participant "DeviceUsageActivity" as A
+participant "SmartHomeFacade" as F
+participant "CommandExecutor" as E
+participant "StartUsingCommand" as CMD
+participant "DeviceAccessProxy" as PX
+participant "Television" as TV
+participant "IdleState" as ST
+
+P -> A : begin(this)
+A -> F : findAvailableDevice(TV)
+F --> A : Optional[tv]
+A -> P : moveTo(tv.getRoom())
+A -> E : execute(new TurnOnCommand(P, tv))
+note right of E : analogicky: TurnOn → Off → Idle
+A -> E : execute(new StartUsingCommand(P, tv))
+activate E
+E -> CMD : execute()
+activate CMD
+CMD -> PX ** : new DeviceAccessProxy(tv, P)
+CMD -> PX : startUsing(P)
+activate PX
+PX -> PX : check(USE)\nP.getPermissions().isAllowed(TV, USE)
+alt oprávnění chybí
+  PX --> CMD : throw AccessDeniedException
+  CMD --> E : CommandResult(false, "access denied")
+else povoleno
+  PX -> TV : startUsing(P)
+  TV -> ST : startUsing(tv, P)
+  ST -> TV : setState(ActiveState)
+  PX --> CMD
+  CMD --> E : CommandResult(true)
+end
+deactivate PX
+deactivate CMD
+E -> E : history.add(CommandRecord)\nactivityLog.record(...)
+E --> A : result
+deactivate E
+A --> P : true (aktivita běží N ticků)
+@enduml

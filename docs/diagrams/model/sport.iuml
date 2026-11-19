@@ -1,0 +1,34 @@
+package "sport" {
+  class SportEquipment {
+    - id : String
+    - type : SportType
+    - name : String
+    - borrowedBy : Inhabitant
+    - usageCount : int
+    + isAvailable() : boolean
+    + getType() : SportType
+    + accept(v : HouseVisitor) : void
+  }
+
+  enum SportType {
+    BIKE
+    SKIS
+    SNOWBOARD
+    SCOOTER
+    INLINE_SKATES
+  }
+
+  class EquipmentPool <<Object Pool>> {
+    - storage : Room
+    - free : Map<SportType, Deque<SportEquipment>>
+    - borrowed : Map<SportEquipment, Inhabitant>
+    + acquire(type : SportType, who : Inhabitant) : Optional<SportEquipment>
+    + release(e : SportEquipment) : void
+    + add(e : SportEquipment) : void
+    + getAll() : List<SportEquipment>
+    + countFree(type : SportType) : int
+  }
+
+  SportEquipment --> SportType
+  EquipmentPool o-- "*" SportEquipment
+}

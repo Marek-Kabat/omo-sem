@@ -1,0 +1,32 @@
+@startuml 14-seq-water-leak
+!include common.iuml
+title Odbavení události WATER_LEAK (Observer + Chain of Responsibility)
+participant "HumiditySensor" as S
+participant "EventBus" as B
+participant "Handler: Máma\n(InhabitantEventHandler)" as M
+participant "Handler: Táta\n(InhabitantEventHandler)" as T
+participant "Handler: Dcera\n(InhabitantEventHandler)" as D
+participant "UnhandledEventHandler" as U
+actor "Máma" as PM
+actor "Táta" as PT
+actor "Dcera" as PD
+
+S -> B : publish(Event(WATER_LEAK, ALERT, koupelna))
+...další krok – dispatchPending()...
+B -> M : onEvent(e)
+M -> M : canHandle(e)? (je doma)
+M -> PM : assignTask("zavolat hasiče", CRITICAL)
+M -> M : e.markHandledBy("Máma")
+note right of M: continueAfterHandling = true
+M -> T : onEvent(e)
+T -> PT : assignTask("uzavřít hlavní přívod vody", CRITICAL)
+T -> T : e.markHandledBy("Táta")
+T -> D : onEvent(e)
+D -> PD : assignTask("vylovit křečka", HIGH)
+D -> D : e.markHandledBy("Dcera")
+D -> U : onEvent(e)
+U -> U : [e.isHandled()] nic\n[jinak] zaznamená neodbavenou událost
+...v následujících tickách...
+PT -> PT : house.closeSupply(WATER)
+note over PT: zařízení spotřebovávající vodu\nse stanou nedostupná
+@enduml

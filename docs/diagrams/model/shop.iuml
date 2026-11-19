@@ -1,0 +1,22 @@
+package "shop" {
+  class DemandMonitor {
+    - waitingCounter : Map<String, Integer>
+    - threshold : int
+    + reportWaiting(resourceKey : String) : void
+    + onTick(tick : long) : void
+  }
+  class DeviceShop {
+    - deviceFactory : DeviceFactory
+    - purchases : List<Purchase>
+    + buyDevice(type : DeviceType, room : Room, buyer : Actor) : Device
+    + buyEquipment(type : SportType, buyer : Actor) : SportEquipment
+    + getPurchases() : List<Purchase>
+  }
+  class Purchase <<record>> {
+    + tick : long
+    + buyerName : String
+    + itemId : String
+    + itemType : String
+  }
+  DeviceShop *-- "*" Purchase
+}

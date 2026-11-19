@@ -1,0 +1,165 @@
+package "device" {
+  interface DeviceApi {
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+  }
+
+  abstract class Device <<Template Method>> {
+    - id : String
+    - name : String
+    - room : Room
+    - essential : boolean
+    - state : DeviceState
+    - currentUser : Actor
+    - durability : Durability
+    - profile : ConsumptionProfile
+    - meter : ConsumptionMeter
+    - manual : Manual
+    + getId() : String
+    + {abstract} getType() : DeviceType
+    + getRoom() : Room
+    + isEssential() : boolean
+    + isAvailable() : boolean
+    + isBroken() : boolean
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    ~ breakDown() : void
+    ~ setState(s : DeviceState) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+    + getManual() : Manual
+    + onTick(tick : long) : void
+    # onTickSpecific(tick : long) : void
+    # publish(type : EventType) : void
+    + accept(v : HouseVisitor) : void
+  }
+
+  enum DeviceType {
+    FRIDGE
+    STOVE
+    MICROWAVE
+    TV
+    WASHING_MACHINE
+    DISHWASHER
+    COFFEE_MACHINE
+    CD_PLAYER
+    LIGHT
+    AIR_CONDITIONER
+    COMPUTER
+    GAS_BOILER
+    TEMPERATURE_SENSOR
+    WIND_SENSOR
+    HUMIDITY_SENSOR
+    WEATHER_STATION
+    CIRCUIT_BREAKER
+  }
+
+  enum DeviceAction {
+    TURN_ON
+    TURN_OFF
+    USE
+    FILL
+    REPAIR
+    BUY
+  }
+
+  enum ConsumptionType {
+    ELECTRICITY
+    WATER
+    GAS
+    - unit : String
+  }
+
+  class ConsumptionProfile {
+    - rates : Map<ConsumptionType, ConsumptionRate>
+    + amountPerTick(type : ConsumptionType, load : LoadLevel) : double
+    + getTypes() : Set<ConsumptionType>
+  }
+
+  class ConsumptionRate <<record>> {
+    + standby : double
+    + full : double
+  }
+
+  class ConsumptionMeter {
+    - totals : EnumMap<ConsumptionType, Double>
+    ~ record(type : ConsumptionType, amount : double) : void
+    + getTotal(type : ConsumptionType) : double
+    + snapshot() : Map<ConsumptionType, Double>
+  }
+
+  class Durability {
+    - lifetimeTicks : int
+    - remainingTicks : int
+    - failureProbability : double
+    ~ wear(load : LoadLevel, rnd : Random) : boolean
+    ~ restore(ratio : double) : void
+    + getRemainingPercent() : double
+  }
+
+  interface Manual {
+    + getRepairInstructions() : String
+    + getRepairTicks() : int
+  }
+
+  class ManualProxy <<Virtual Proxy>> {
+    - deviceType : DeviceType
+    - realManual : RealManual
+    + getRepairInstructions() : String
+    + getRepairTicks() : int
+  }
+
+  class RealManual {
+    - text : String
+    - repairTicks : int
+  }
+
+  interface "ContentHolder<T>" as ContentHolder {
+    + addItem(item : T) : void
+    + takeItem() : Optional<T>
+    + getItems() : List<T>
+    + isEmpty() : boolean
+    + getCapacity() : int
+  }
+
+  class DeviceFactory <<Factory Method>> {
+    - creators : Map<DeviceType, DeviceCreator>
+    + create(type : DeviceType, spec : DeviceSpec) : Device
+    + register(type : DeviceType, creator : DeviceCreator) : void
+  }
+
+  class DeviceSpec <<record>> {
+    + id : String
+    + name : String
+    + essential : boolean
+    + lifetimeTicks : int
+    + params : Map<String, Object>
+  }
+
+  interface DeviceCreator {
+    + create(spec : DeviceSpec) : Device
+  }
+
+  Device ..|> DeviceApi
+  Device --> "1" DeviceType
+  Device *-- "1" Durability
+  Device *-- "1" ConsumptionProfile
+  Device *-- "1" ConsumptionMeter
+  Device o-- "1" Manual
+  ConsumptionProfile *-- "1..*" ConsumptionRate
+  ConsumptionProfile ..> ConsumptionType
+  ManualProxy ..|> Manual
+  RealManual ..|> Manual
+  ManualProxy --> "0..1" RealManual : lazy >
+  DeviceFactory o-- "*" DeviceCreator
+  DeviceFactory ..> Device : <<create>>
+  DeviceCreator ..> DeviceSpec
+}

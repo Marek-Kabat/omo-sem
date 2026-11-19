@@ -1,0 +1,132 @@
+package "house" {
+  interface HouseComponent <<Composite>> {
+    + getName() : String
+    + getChildren() : List<HouseComponent>
+    + accept(visitor : HouseVisitor) : void
+  }
+
+  interface HouseVisitor <<Visitor>> {
+    + visitHouse(h : House) : void
+    + visitFloor(f : Floor) : void
+    + visitRoom(r : Room) : void
+    + visitWindow(w : Window) : void
+    + visitBlind(b : Blind) : void
+    + visitDevice(d : Device) : void
+    + visitInhabitant(i : Inhabitant) : void
+    + visitEquipment(e : SportEquipment) : void
+  }
+
+  class House {
+    - name : String
+    - floors : List<Floor>
+    - outsideAreas : List<Room>
+    - inhabitants : List<Inhabitant>
+    - equipmentPool : EquipmentPool
+    - closedSupplies : Set<ConsumptionType>
+    + getFloors() : List<Floor>
+    + getOutsideAreas() : List<Room>
+    + getAllRooms() : List<Room>
+    + getAllDevices() : List<Device>
+    + findRoom(id : String) : Optional<Room>
+    + findDevices(type : DeviceType) : List<Device>
+    + getInhabitants() : List<Inhabitant>
+    + getEquipmentPool() : EquipmentPool
+    + isSupplyAvailable(t : ConsumptionType) : boolean
+    + closeSupply(t : ConsumptionType) : void
+    + openSupply(t : ConsumptionType) : void
+  }
+
+  class Floor {
+    - level : int
+    - name : String
+    - rooms : List<Room>
+    + getLevel() : int
+    + getRooms() : List<Room>
+  }
+
+  class Room {
+    - id : String
+    - name : String
+    - type : RoomType
+    - floor : Floor
+    - devices : List<Device>
+    - windows : List<Window>
+    - occupants : Set<Inhabitant>
+    + isOutdoor() : boolean
+    + getDevices() : List<Device>
+    + getWindows() : List<Window>
+    + getOccupants() : Set<Inhabitant>
+    ~ addDevice(d : Device) : void
+    ~ enter(i : Inhabitant) : void
+    ~ leave(i : Inhabitant) : void
+  }
+
+  enum RoomType {
+    LIVING_ROOM
+    KITCHEN
+    BEDROOM
+    KIDS_ROOM
+    BATHROOM
+    HALL
+    OFFICE
+    GARAGE
+    GARDEN
+    YARD
+    + isOutdoor() : boolean
+  }
+
+  class Window {
+    - id : String
+    - open : boolean
+    - blind : Blind
+    + open() : void
+    + close() : void
+    + isOpen() : boolean
+    + getBlind() : Optional<Blind>
+  }
+
+  class Blind {
+    - id : String
+    - outdoor : boolean
+    - position : BlindPosition
+    + pullUp() : void
+    + pullDown() : void
+    + isOutdoor() : boolean
+  }
+
+  enum BlindPosition {
+    UP
+    DOWN
+  }
+
+  class HouseBuilder <<Builder>> {
+    - house : House
+    - currentFloor : Floor
+    - currentRoom : Room
+    + house(name : String) : HouseBuilder
+    + floor(level : int, name : String) : HouseBuilder
+    + room(id : String, name : String, type : RoomType) : HouseBuilder
+    + outsideArea(id : String, name : String, type : RoomType) : HouseBuilder
+    + window(id : String, blind : boolean, outdoorBlind : boolean) : HouseBuilder
+    + device(d : Device) : HouseBuilder
+    + inhabitant(i : Inhabitant, roomId : String) : HouseBuilder
+    + equipment(e : SportEquipment) : HouseBuilder
+    + build() : House
+  }
+
+  House ..|> HouseComponent
+  Floor ..|> HouseComponent
+  Room ..|> HouseComponent
+  Window ..|> HouseComponent
+  Blind ..|> HouseComponent
+
+  House *-- "1..*" Floor
+  House *-- "1..*" Room : outsideAreas
+  Floor *-- "1..*" Room
+  Room *-- "0..*" Window
+  Window *-- "0..1" Blind
+  Room --> RoomType
+  Blind --> BlindPosition
+  HouseComponent ..> HouseVisitor : accept >
+  HouseBuilder ..> House : <<create>>
+}

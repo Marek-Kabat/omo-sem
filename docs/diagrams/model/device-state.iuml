@@ -1,0 +1,29 @@
+package "device.state" {
+  interface DeviceState <<State>> {
+    + turnOn(d : Device) : void
+    + turnOff(d : Device) : void
+    + startUsing(d : Device, user : Actor) : void
+    + stopUsing(d : Device) : void
+    + breakDown(d : Device) : void
+    + repair(d : Device) : void
+    + getLoadLevel() : LoadLevel
+    + getName() : String
+  }
+  class OffState
+  class IdleState
+  class ActiveState
+  class BrokenState
+  enum LoadLevel {
+    NONE
+    STANDBY
+    FULL
+  }
+  class IllegalDeviceStateException
+
+  OffState ..|> DeviceState
+  IdleState ..|> DeviceState
+  ActiveState ..|> DeviceState
+  BrokenState ..|> DeviceState
+  DeviceState ..> LoadLevel
+  DeviceState ..> IllegalDeviceStateException : <<throws>>
+}

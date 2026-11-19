@@ -1,0 +1,26 @@
+@startuml 11-state-device
+!include common.iuml
+title Stavový diagram zařízení (State pattern)
+skinparam linetype polyline
+hide empty description
+[*] --> Off
+Off --> Idle : turnOn()\n[zařízení není rozbité]
+Idle --> Off : turnOff()
+Idle --> Active : startUsing(user)\n[oprávnění, dostupné médium]
+Active --> Idle : stopUsing() / konec programu\n(publikuje PROGRAM_FINISHED)
+Active --> Off : turnOff()\n(systémové vypnutí)
+Off -up-> Broken : breakDown()
+Idle --> Broken : breakDown()\n[životnost vyčerpána / náhoda]
+Active --> Broken : breakDown()\n(publikuje DEVICE_BROKEN)
+Broken -down-> Off : repair(by)\n(publikuje DEVICE_REPAIRED)
+
+state Off : spotřeba = 0
+state Idle : spotřeba = standby
+state Active : spotřeba = full\nopotřebení životnosti
+state Broken : ignoruje uživatele i systém\nspotřeba = 0
+note right of Broken
+  turnOn(), turnOff(), startUsing()
+  vyhodí IllegalDeviceStateException;
+  systémové příkazy jsou ignorovány
+end note
+@enduml

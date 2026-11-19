@@ -1,0 +1,32 @@
+@startuml 08-config-simulation
+!include common.iuml
+skinparam linetype polyline
+title Konfigurace, simulace a nákup zařízení
+!include model/simulation.iuml
+!include model/config.iuml
+!include model/shop.iuml
+
+class House <<external>>
+class HouseBuilder <<external>>
+class DeviceFactory <<external>>
+class EventBus <<external>>
+class CommandExecutor <<external>>
+class SmartHomeFacade <<external>>
+class ActivityLog <<external>>
+class ReportFactory <<external>>
+Simulation *-- "1" House
+Simulation *-- "1" EventBus
+Simulation *-- "1" CommandExecutor
+Simulation *-- "1" SmartHomeFacade
+Simulation *-- "1" ActivityLog
+Simulation *-- "1" DemandMonitor
+Simulation *-- "1" DeviceShop
+Simulation ..> HouseConfigLoader
+Simulation ..> HouseDirector
+Simulation ..> ReportFactory
+HouseDirector ..> HouseBuilder
+HouseDirector ..> DeviceFactory
+DemandMonitor ..|> TickListener
+DemandMonitor ..> EventBus
+DeviceShop ..> DeviceFactory
+@enduml

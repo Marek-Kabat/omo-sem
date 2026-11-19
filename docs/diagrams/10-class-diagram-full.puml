@@ -1,0 +1,1124 @@
+@startuml 10-class-diagram-full
+!include common.iuml
+skinparam linetype polyline
+skinparam nodesep 25
+skinparam ranksep 60
+left to right direction
+
+title Smart Home – kompletní class diagram (vč. metod)
+' VYGENEROVÁNO skriptem gen_full.py – needitovat ručně
+  class Simulation <<Singleton>> #FDE2E4 {
+    - {static} instance : Simulation
+    - house : House
+    - clock : SimulationClock
+    - weather : Weather
+    - eventBus : EventBus
+    - executor : CommandExecutor
+    - facade : SmartHomeFacade
+    - activityLog : ActivityLog
+    - random : Random
+    - Simulation()
+    + {static} getInstance() : Simulation
+    + init(loader : HouseConfigLoader) : void
+    + run(ticks : int) : void
+    - step() : void
+    + generateReports(outputDir : Path) : void
+    + getHouse() : House
+    + getClock() : SimulationClock
+    + getEventBus() : EventBus
+    + getRandom() : Random
+  }
+
+  class SimulationClock #FDE2E4 {
+    - currentTick : long
+    - tickLength : Duration
+    - startTime : LocalDateTime
+    - listeners : List<TickListener>
+    + advance() : void
+    + register(listener : TickListener) : void
+    + getCurrentTick() : long
+    + getCurrentTime() : LocalDateTime
+  }
+
+  interface TickListener #FDE2E4 {
+    + onTick(tick : long) : void
+  }
+
+  class Weather #FDE2E4 {
+    - outsideTemperature : double
+    - windSpeed : double
+    - stormApproaching : boolean
+    + onTick(tick : long) : void
+    + getOutsideTemperature() : double
+    + getWindSpeed() : double
+    + isStormApproaching() : boolean
+  }
+
+  Simulation *-- "1" SimulationClock
+  Simulation *-- "1" Weather
+  SimulationClock o-- "*" TickListener : notifikuje >
+  Weather ..|> TickListener
+  interface HouseConfigLoader <<Strategy>> #E2ECE9 {
+    + load() : HouseConfigDto
+  }
+  class JsonHouseConfigLoader #E2ECE9 {
+    - path : Path
+    - mapper : ObjectMapper
+  }
+  class DefaultHouseConfig #E2ECE9
+
+  class HouseDirector <<Builder Director>> #E2ECE9 {
+    - deviceFactory : DeviceFactory
+    + construct(dto : HouseConfigDto, builder : HouseBuilder) : House
+    - createInhabitant(dto : InhabitantDto) : Inhabitant
+  }
+
+  class HouseConfigDto #E2ECE9 {
+    + name : String
+    + floors : List<FloorDto>
+    + outsideAreas : List<RoomDto>
+    + inhabitants : List<InhabitantDto>
+    + equipment : List<EquipmentDto>
+    + simulation : SimulationSettingsDto
+  }
+  class FloorDto #E2ECE9 {
+    + level : int
+    + name : String
+    + rooms : List<RoomDto>
+  }
+  class RoomDto #E2ECE9 {
+    + id : String
+    + name : String
+    + type : RoomType
+    + windows : List<WindowDto>
+    + devices : List<DeviceDto>
+  }
+  class WindowDto #E2ECE9 {
+    + id : String
+    + blind : boolean
+    + outdoorBlind : boolean
+  }
+  class DeviceDto #E2ECE9 {
+    + id : String
+    + type : DeviceType
+    + name : String
+    + essential : boolean
+    + lifetimeTicks : int
+    + params : Map<String, Object>
+  }
+  class InhabitantDto #E2ECE9 {
+    + id : String
+    + name : String
+    + kind : String
+    + role : String
+    + age : int
+    + startRoom : String
+    + permissions : Map<DeviceType, List<DeviceAction>>
+    + sports : List<SportType>
+    + repairSkills : List<DeviceType>
+  }
+  class EquipmentDto #E2ECE9 {
+    + id : String
+    + type : SportType
+    + name : String
+  }
+  class SimulationSettingsDto #E2ECE9 {
+    + ticks : int
+    + tickMinutes : int
+    + seed : long
+  }
+
+  JsonHouseConfigLoader ..|> HouseConfigLoader
+  DefaultHouseConfig ..|> HouseConfigLoader
+  HouseConfigLoader ..> HouseConfigDto : <<create>>
+  HouseConfigDto *-- "*" FloorDto
+  HouseConfigDto *-- "*" InhabitantDto
+  HouseConfigDto *-- "*" EquipmentDto
+  HouseConfigDto *-- "1" SimulationSettingsDto
+  FloorDto *-- "*" RoomDto
+  RoomDto *-- "*" WindowDto
+  RoomDto *-- "*" DeviceDto
+  HouseDirector ..> HouseConfigDto
+  interface HouseComponent <<Composite>> #DDEBF7 {
+    + getName() : String
+    + getChildren() : List<HouseComponent>
+    + accept(visitor : HouseVisitor) : void
+  }
+
+  interface HouseVisitor <<Visitor>> #DDEBF7 {
+    + visitHouse(h : House) : void
+    + visitFloor(f : Floor) : void
+    + visitRoom(r : Room) : void
+    + visitWindow(w : Window) : void
+    + visitBlind(b : Blind) : void
+    + visitDevice(d : Device) : void
+    + visitInhabitant(i : Inhabitant) : void
+    + visitEquipment(e : SportEquipment) : void
+  }
+
+  class House #DDEBF7 {
+    - name : String
+    - floors : List<Floor>
+    - outsideAreas : List<Room>
+    - inhabitants : List<Inhabitant>
+    - equipmentPool : EquipmentPool
+    - closedSupplies : Set<ConsumptionType>
+    + getFloors() : List<Floor>
+    + getOutsideAreas() : List<Room>
+    + getAllRooms() : List<Room>
+    + getAllDevices() : List<Device>
+    + findRoom(id : String) : Optional<Room>
+    + findDevices(type : DeviceType) : List<Device>
+    + getInhabitants() : List<Inhabitant>
+    + getEquipmentPool() : EquipmentPool
+    + isSupplyAvailable(t : ConsumptionType) : boolean
+    + closeSupply(t : ConsumptionType) : void
+    + openSupply(t : ConsumptionType) : void
+  }
+
+  class Floor #DDEBF7 {
+    - level : int
+    - name : String
+    - rooms : List<Room>
+    + getLevel() : int
+    + getRooms() : List<Room>
+  }
+
+  class Room #DDEBF7 {
+    - id : String
+    - name : String
+    - type : RoomType
+    - floor : Floor
+    - devices : List<Device>
+    - windows : List<Window>
+    - occupants : Set<Inhabitant>
+    + isOutdoor() : boolean
+    + getDevices() : List<Device>
+    + getWindows() : List<Window>
+    + getOccupants() : Set<Inhabitant>
+    ~ addDevice(d : Device) : void
+    ~ enter(i : Inhabitant) : void
+    ~ leave(i : Inhabitant) : void
+  }
+
+  enum RoomType #DDEBF7 {
+    LIVING_ROOM
+    KITCHEN
+    BEDROOM
+    KIDS_ROOM
+    BATHROOM
+    HALL
+    OFFICE
+    GARAGE
+    GARDEN
+    YARD
+    + isOutdoor() : boolean
+  }
+
+  class Window #DDEBF7 {
+    - id : String
+    - open : boolean
+    - blind : Blind
+    + open() : void
+    + close() : void
+    + isOpen() : boolean
+    + getBlind() : Optional<Blind>
+  }
+
+  class Blind #DDEBF7 {
+    - id : String
+    - outdoor : boolean
+    - position : BlindPosition
+    + pullUp() : void
+    + pullDown() : void
+    + isOutdoor() : boolean
+  }
+
+  enum BlindPosition #DDEBF7 {
+    UP
+    DOWN
+  }
+
+  class HouseBuilder <<Builder>> #DDEBF7 {
+    - house : House
+    - currentFloor : Floor
+    - currentRoom : Room
+    + house(name : String) : HouseBuilder
+    + floor(level : int, name : String) : HouseBuilder
+    + room(id : String, name : String, type : RoomType) : HouseBuilder
+    + outsideArea(id : String, name : String, type : RoomType) : HouseBuilder
+    + window(id : String, blind : boolean, outdoorBlind : boolean) : HouseBuilder
+    + device(d : Device) : HouseBuilder
+    + inhabitant(i : Inhabitant, roomId : String) : HouseBuilder
+    + equipment(e : SportEquipment) : HouseBuilder
+    + build() : House
+  }
+
+  House ..|> HouseComponent
+  Floor ..|> HouseComponent
+  Room ..|> HouseComponent
+  Window ..|> HouseComponent
+  Blind ..|> HouseComponent
+
+  House *-- "1..*" Floor
+  House *-- "1..*" Room : outsideAreas
+  Floor *-- "1..*" Room
+  Room *-- "0..*" Window
+  Window *-- "0..1" Blind
+  Room --> RoomType
+  Blind --> BlindPosition
+  HouseComponent ..> HouseVisitor : accept >
+  HouseBuilder ..> House : <<create>>
+  interface DeviceApi #FFF1C1 {
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+  }
+
+  abstract class Device <<Template Method>> #FFF1C1 {
+    - id : String
+    - name : String
+    - room : Room
+    - essential : boolean
+    - state : DeviceState
+    - currentUser : Actor
+    - durability : Durability
+    - profile : ConsumptionProfile
+    - meter : ConsumptionMeter
+    - manual : Manual
+    + getId() : String
+    + {abstract} getType() : DeviceType
+    + getRoom() : Room
+    + isEssential() : boolean
+    + isAvailable() : boolean
+    + isBroken() : boolean
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    ~ breakDown() : void
+    ~ setState(s : DeviceState) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+    + getManual() : Manual
+    + onTick(tick : long) : void
+    # onTickSpecific(tick : long) : void
+    # publish(type : EventType) : void
+    + accept(v : HouseVisitor) : void
+  }
+
+  enum DeviceType #FFF1C1 {
+    FRIDGE
+    STOVE
+    MICROWAVE
+    TV
+    WASHING_MACHINE
+    DISHWASHER
+    COFFEE_MACHINE
+    CD_PLAYER
+    LIGHT
+    AIR_CONDITIONER
+    COMPUTER
+    GAS_BOILER
+    TEMPERATURE_SENSOR
+    WIND_SENSOR
+    HUMIDITY_SENSOR
+    WEATHER_STATION
+    CIRCUIT_BREAKER
+  }
+
+  enum DeviceAction #FFF1C1 {
+    TURN_ON
+    TURN_OFF
+    USE
+    FILL
+    REPAIR
+    BUY
+  }
+
+  enum ConsumptionType #FFF1C1 {
+    ELECTRICITY
+    WATER
+    GAS
+    - unit : String
+  }
+
+  class ConsumptionProfile #FFF1C1 {
+    - rates : Map<ConsumptionType, ConsumptionRate>
+    + amountPerTick(type : ConsumptionType, load : LoadLevel) : double
+    + getTypes() : Set<ConsumptionType>
+  }
+
+  class ConsumptionRate <<record>> #FFF1C1 {
+    + standby : double
+    + full : double
+  }
+
+  class ConsumptionMeter #FFF1C1 {
+    - totals : EnumMap<ConsumptionType, Double>
+    ~ record(type : ConsumptionType, amount : double) : void
+    + getTotal(type : ConsumptionType) : double
+    + snapshot() : Map<ConsumptionType, Double>
+  }
+
+  class Durability #FFF1C1 {
+    - lifetimeTicks : int
+    - remainingTicks : int
+    - failureProbability : double
+    ~ wear(load : LoadLevel, rnd : Random) : boolean
+    ~ restore(ratio : double) : void
+    + getRemainingPercent() : double
+  }
+
+  interface Manual #FFF1C1 {
+    + getRepairInstructions() : String
+    + getRepairTicks() : int
+  }
+
+  class ManualProxy <<Virtual Proxy>> #FFF1C1 {
+    - deviceType : DeviceType
+    - realManual : RealManual
+    + getRepairInstructions() : String
+    + getRepairTicks() : int
+  }
+
+  class RealManual #FFF1C1 {
+    - text : String
+    - repairTicks : int
+  }
+
+  interface "ContentHolder<T>" as ContentHolder #FFF1C1 {
+    + addItem(item : T) : void
+    + takeItem() : Optional<T>
+    + getItems() : List<T>
+    + isEmpty() : boolean
+    + getCapacity() : int
+  }
+
+  class DeviceFactory <<Factory Method>> #FFF1C1 {
+    - creators : Map<DeviceType, DeviceCreator>
+    + create(type : DeviceType, spec : DeviceSpec) : Device
+    + register(type : DeviceType, creator : DeviceCreator) : void
+  }
+
+  class DeviceSpec <<record>> #FFF1C1 {
+    + id : String
+    + name : String
+    + essential : boolean
+    + lifetimeTicks : int
+    + params : Map<String, Object>
+  }
+
+  interface DeviceCreator #FFF1C1 {
+    + create(spec : DeviceSpec) : Device
+  }
+
+  Device ..|> DeviceApi
+  Device --> "1" DeviceType
+  Device *-- "1" Durability
+  Device *-- "1" ConsumptionProfile
+  Device *-- "1" ConsumptionMeter
+  Device o-- "1" Manual
+  ConsumptionProfile *-- "1..*" ConsumptionRate
+  ConsumptionProfile ..> ConsumptionType
+  ManualProxy ..|> Manual
+  RealManual ..|> Manual
+  ManualProxy --> "0..1" RealManual : lazy >
+  DeviceFactory o-- "*" DeviceCreator
+  DeviceFactory ..> Device : <<create>>
+  DeviceCreator ..> DeviceSpec
+  ' --- konkrétní spotřebiče ---
+  class Fridge #FFF8DC {
+    - food : List<FoodItem>
+    - capacity : int
+  }
+  class FoodItem <<record>> #FFF8DC {
+    + name : String
+    + portions : int
+  }
+  class Stove #FFF8DC
+  class Microwave #FFF8DC
+  class Television #FFF8DC {
+    - channel : int
+  }
+  class WashingMachine #FFF8DC {
+    - programTicks : int
+  }
+  class Dishwasher #FFF8DC {
+    - programTicks : int
+  }
+  class CoffeeMachine #FFF8DC {
+    - capsules : Deque<CoffeeCapsule>
+  }
+  class CoffeeCapsule <<record>> #FFF8DC {
+    + flavour : String
+  }
+  class CdPlayer #FFF8DC {
+    - insertedCd : Cd
+  }
+  class Cd <<record>> #FFF8DC {
+    + title : String
+  }
+  class Light #FFF8DC
+  class AirConditioner #FFF8DC {
+    - targetTemperature : double
+  }
+  class Computer #FFF8DC
+  class GasBoiler #FFF8DC {
+    - targetTemperature : double
+  }
+
+  Fridge -up-|> Device
+  Stove -up-|> Device
+  Microwave -up-|> Device
+  Television -up-|> Device
+  WashingMachine -up-|> Device
+  Dishwasher -up-|> Device
+  CoffeeMachine -up-|> Device
+  CdPlayer -up-|> Device
+  Light -up-|> Device
+  AirConditioner -up-|> Device
+  Computer -up-|> Device
+  GasBoiler -up-|> Device
+  Fridge ..|> ContentHolder
+  CoffeeMachine ..|> ContentHolder
+  CdPlayer ..|> ContentHolder
+  Fridge *-- "*" FoodItem
+  CoffeeMachine *-- "*" CoffeeCapsule
+  CdPlayer o-- "0..1" Cd
+  interface DeviceState <<State>> #FCE3C4 {
+    + turnOn(d : Device) : void
+    + turnOff(d : Device) : void
+    + startUsing(d : Device, user : Actor) : void
+    + stopUsing(d : Device) : void
+    + breakDown(d : Device) : void
+    + repair(d : Device) : void
+    + getLoadLevel() : LoadLevel
+    + getName() : String
+  }
+  class OffState #FCE3C4
+  class IdleState #FCE3C4
+  class ActiveState #FCE3C4
+  class BrokenState #FCE3C4
+  enum LoadLevel #FCE3C4 {
+    NONE
+    STANDBY
+    FULL
+  }
+  class IllegalDeviceStateException #FCE3C4
+
+  OffState ..|> DeviceState
+  IdleState ..|> DeviceState
+  ActiveState ..|> DeviceState
+  BrokenState ..|> DeviceState
+  DeviceState ..> LoadLevel
+  DeviceState ..> IllegalDeviceStateException : <<throws>>
+  abstract class Sensor #F8D9A8 {
+    # weather : Weather
+    - threshold : double
+    - lastValue : double
+    # {abstract} measure() : double
+    # {abstract} evaluate(value : double) : Optional<EventType>
+    # onTickSpecific(tick : long) : void
+    + getLastValue() : double
+  }
+  class TemperatureSensor #F8D9A8
+  class WindSensor #F8D9A8
+  class HumiditySensor #F8D9A8 {
+    - leakProbability : double
+  }
+  class WeatherStation #F8D9A8
+  class CircuitBreaker #F8D9A8 {
+    - tripped : boolean
+    - tripProbability : double
+    + reset() : void
+    + isTripped() : boolean
+  }
+  TemperatureSensor -up-|> Sensor
+  WindSensor -up-|> Sensor
+  HumiditySensor -up-|> Sensor
+  WeatherStation -up-|> Sensor
+  CircuitBreaker -up-|> Sensor
+  interface Actor #E4DFF5 {
+    + getName() : String
+    + getPermissions() : PermissionSet
+  }
+
+  abstract class Inhabitant <<Template Method>> #E4DFF5 {
+    - id : String
+    - name : String
+    - currentRoom : Room
+    - status : InhabitantStatus
+    - permissions : PermissionSet
+    - strategy : ActivityStrategy
+    - currentActivity : Activity
+    - pendingTasks : PriorityQueue<Task>
+    - waitingTicks : int
+    + getCurrentRoom() : Room
+    + getStatus() : InhabitantStatus
+    + moveTo(room : Room) : void
+    + assignTask(task : Task) : void
+    + isAtHome() : boolean
+    + isAvailableFor(task : Task) : boolean
+    + onTick(tick : long) : void
+    # {abstract} maybeGenerateEvent(rnd : Random) : Optional<Event>
+    + accept(v : HouseVisitor) : void
+  }
+
+  class Person #E4DFF5 {
+    - role : FamilyRole
+    - age : int
+    - repairSkills : Set<DeviceType>
+    + getRole() : FamilyRole
+    + canRepair(type : DeviceType) : boolean
+  }
+
+  class Pet #E4DFF5 {
+    - species : PetSpecies
+    + getSpecies() : PetSpecies
+  }
+
+  enum FamilyRole #E4DFF5 {
+    FATHER
+    MOTHER
+    SON
+    DAUGHTER
+    BABY
+    GRANDMOTHER
+  }
+
+  enum PetSpecies #E4DFF5 {
+    CAT
+    DOG
+    HAMSTER
+  }
+
+  enum InhabitantStatus #E4DFF5 {
+    IDLE
+    USING_DEVICE
+    DOING_SPORT
+    WAITING
+    HANDLING_EVENT
+    REPAIRING
+    SLEEPING
+  }
+
+  class PermissionSet #E4DFF5 {
+    - allowed : Map<DeviceType, Set<DeviceAction>>
+    - allowedSports : Set<SportType>
+    + isAllowed(type : DeviceType, action : DeviceAction) : boolean
+    + canDoSport(type : SportType) : boolean
+    + usableDeviceTypes() : Set<DeviceType>
+    + {static} builder() : PermissionSet.Builder
+  }
+
+  Inhabitant ..|> Actor
+  Person -up-|> Inhabitant
+  Pet -up-|> Inhabitant
+  Inhabitant *-- "1" PermissionSet
+  Inhabitant --> InhabitantStatus
+  Person --> FamilyRole
+  Pet --> PetSpecies
+  interface Activity #EFE6F9 {
+    + begin(performer : Inhabitant) : boolean
+    + progress() : boolean
+    + end() : void
+    + getDescription() : String
+  }
+
+  abstract class AbstractActivity #EFE6F9 {
+    # performer : Inhabitant
+    # remainingTicks : int
+    + progress() : boolean
+  }
+
+  class DeviceUsageActivity #EFE6F9 {
+    - deviceType : DeviceType
+    - device : Device
+    - facade : SmartHomeFacade
+    - executor : CommandExecutor
+  }
+
+  class SportActivity #EFE6F9 {
+    - sportType : SportType
+    - equipment : SportEquipment
+    - pool : EquipmentPool
+  }
+
+  class IdleActivity #EFE6F9
+
+  class Task <<Command>> #EFE6F9 {
+    - priority : TaskPriority
+    - event : Event
+    - action : Consumer<Inhabitant>
+    - description : String
+    + compareTo(o : Task) : int
+  }
+
+  class RepairTask #EFE6F9 {
+    - device : Device
+  }
+
+  enum TaskPriority #EFE6F9 {
+    LEISURE
+    NORMAL
+    HIGH
+    CRITICAL
+  }
+
+  interface ActivityStrategy <<Strategy>> #EFE6F9 {
+    + chooseNext(i : Inhabitant, house : House, rnd : Random) : Activity
+  }
+
+  class BalancedLeisureStrategy #EFE6F9 {
+    - sportRatio : double = 0.5
+  }
+  class BabyStrategy #EFE6F9
+  class PetStrategy #EFE6F9
+
+  class ActivityLog #EFE6F9 {
+    - records : List<ActivityRecord>
+    + record(r : ActivityRecord) : void
+    + getRecords() : List<ActivityRecord>
+    + countUsages() : Map<String, Map<String, Long>>
+  }
+
+  class ActivityRecord <<record>> #EFE6F9 {
+    + actorName : String
+    + targetId : String
+    + targetKind : TargetKind
+    + action : String
+    + tick : long
+  }
+
+  enum TargetKind #EFE6F9 {
+    DEVICE
+    SPORT_EQUIPMENT
+  }
+
+  AbstractActivity ..|> Activity
+  ActivityRecord --> TargetKind
+  DeviceUsageActivity -up-|> AbstractActivity
+  SportActivity -up-|> AbstractActivity
+  IdleActivity -up-|> AbstractActivity
+  Task -up-|> AbstractActivity
+  RepairTask -up-|> Task
+  Task --> TaskPriority
+  BalancedLeisureStrategy ..|> ActivityStrategy
+  BabyStrategy ..|> ActivityStrategy
+  PetStrategy ..|> ActivityStrategy
+  ActivityStrategy ..> Activity : <<create>>
+  ActivityLog *-- "*" ActivityRecord
+  class SportEquipment #D9F2E6 {
+    - id : String
+    - type : SportType
+    - name : String
+    - borrowedBy : Inhabitant
+    - usageCount : int
+    + isAvailable() : boolean
+    + getType() : SportType
+    + accept(v : HouseVisitor) : void
+  }
+
+  enum SportType #D9F2E6 {
+    BIKE
+    SKIS
+    SNOWBOARD
+    SCOOTER
+    INLINE_SKATES
+  }
+
+  class EquipmentPool <<Object Pool>> #D9F2E6 {
+    - storage : Room
+    - free : Map<SportType, Deque<SportEquipment>>
+    - borrowed : Map<SportEquipment, Inhabitant>
+    + acquire(type : SportType, who : Inhabitant) : Optional<SportEquipment>
+    + release(e : SportEquipment) : void
+    + add(e : SportEquipment) : void
+    + getAll() : List<SportEquipment>
+    + countFree(type : SportType) : int
+  }
+
+  SportEquipment --> SportType
+  EquipmentPool o-- "*" SportEquipment
+  interface EventSource #FAD4D8 {
+    + getSourceName() : String
+    + getLocation() : Room
+  }
+
+  class Event #FAD4D8 {
+    - id : long
+    - type : EventType
+    - severity : Severity
+    - source : EventSource
+    - location : Room
+    - createdAt : long
+    - handledBy : List<String>
+    + markHandledBy(handlerName : String) : void
+    + isHandled() : boolean
+    + getType() : EventType
+    + getSeverity() : Severity
+  }
+
+  enum Severity #FAD4D8 {
+    INFO
+    WARNING
+    ALERT
+  }
+
+  enum EventType #FAD4D8 {
+    STORM_WARNING
+    STRONG_WIND
+    POWER_OUTAGE
+    POWER_RESTORED
+    WATER_LEAK
+    HIGH_TEMPERATURE
+    LOW_TEMPERATURE
+    DEVICE_BROKEN
+    DEVICE_REPAIRED
+    PROGRAM_FINISHED
+    FRIDGE_EMPTY
+    BABY_NEEDS_CHANGE
+    PET_HUNGRY
+    DOG_WANTS_WALK
+    RESOURCE_SHORTAGE
+    - defaultSeverity : Severity
+  }
+
+  class EventBus <<Observer>> #FAD4D8 {
+    - subscribers : Map<EventType, List<EventListener>>
+    - pending : Queue<Event>
+    - history : List<Event>
+    + publish(e : Event) : void
+    + subscribe(type : EventType, l : EventListener) : void
+    + dispatchPending() : void
+    + getHistory() : List<Event>
+  }
+
+  interface EventListener #FAD4D8 {
+    + onEvent(e : Event) : void
+  }
+
+  abstract class EventHandler <<Chain of Responsibility>> #FAD4D8 {
+    - next : EventHandler
+    - continueAfterHandling : boolean
+    + linkWith(next : EventHandler) : EventHandler
+    + onEvent(e : Event) : void
+    # {abstract} canHandle(e : Event) : boolean
+    # {abstract} handle(e : Event) : void
+    # {abstract} getHandlerName() : String
+  }
+
+  class InhabitantEventHandler #FAD4D8 {
+    - inhabitant : Inhabitant
+    - reaction : Function<Event, Task>
+  }
+
+  class DeviceEventHandler #FAD4D8 {
+    - device : Device
+    - reaction : BiConsumer<Device, Event>
+  }
+
+  class SystemEventHandler #FAD4D8 {
+    - name : String
+    - facade : SmartHomeFacade
+    - reaction : BiConsumer<SmartHomeFacade, Event>
+  }
+
+  class UnhandledEventHandler #FAD4D8
+
+  class EventHandlerRegistry #FAD4D8 {
+    + buildChains(house : House, bus : EventBus, facade : SmartHomeFacade) : void
+    - chain(handlers : EventHandler...) : EventHandler
+  }
+
+  Event --> "1" EventType
+  Event --> "1" Severity
+  Event --> "1" EventSource : source
+  EventType --> Severity
+  EventBus o-- "*" EventListener
+  EventBus *-- "*" Event : history
+  EventHandler ..|> EventListener
+  EventHandler --> "0..1" EventHandler : next
+  InhabitantEventHandler -up-|> EventHandler
+  DeviceEventHandler -up-|> EventHandler
+  SystemEventHandler -up-|> EventHandler
+  UnhandledEventHandler -up-|> EventHandler
+  EventHandlerRegistry ..> EventHandler : <<create>>
+  EventHandlerRegistry ..> EventBus : subscribe
+  class DeviceAccessProxy <<Protection Proxy>> #D6EEF2 {
+    - target : Device
+    - actor : Actor
+    - check(action : DeviceAction) : void
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+  }
+
+  class "ContentAccessProxy<T>" as ContentAccessProxy #D6EEF2 {
+    - content : ContentHolder<T>
+    + addItem(item : T) : void
+    + takeItem() : Optional<T>
+  }
+
+  class AccessDeniedException #D6EEF2
+
+  interface DeviceCommand <<Command>> #D6EEF2 {
+    + execute() : CommandResult
+    + getActor() : Actor
+    + getDevice() : Device
+    + getAction() : DeviceAction
+  }
+
+  abstract class AbstractDeviceCommand #D6EEF2 {
+    # actor : Actor
+    # device : Device
+    # api() : DeviceApi
+  }
+
+  class TurnOnCommand #D6EEF2
+  class TurnOffCommand #D6EEF2
+  class StartUsingCommand #D6EEF2
+  class StopUsingCommand #D6EEF2
+  class RepairCommand #D6EEF2
+  class "AddContentCommand<T>" as AddContentCommand #D6EEF2 {
+    - item : T
+  }
+  class "TakeContentCommand<T>" as TakeContentCommand #D6EEF2
+
+  class CommandResult <<record>> #D6EEF2 {
+    + success : boolean
+    + message : String
+  }
+
+  class CommandExecutor <<Invoker>> #D6EEF2 {
+    - history : List<CommandRecord>
+    - activityLog : ActivityLog
+    - clock : SimulationClock
+    + execute(cmd : DeviceCommand) : CommandResult
+    + getHistory() : List<CommandRecord>
+  }
+
+  class CommandRecord <<record>> #D6EEF2 {
+    + tick : long
+    + actorName : String
+    + deviceId : String
+    + action : DeviceAction
+    + result : CommandResult
+  }
+
+  class SystemActor <<Singleton>> #D6EEF2 {
+    - {static} INSTANCE : SystemActor
+    + {static} getInstance() : SystemActor
+    + getPermissions() : PermissionSet
+  }
+
+  class SmartHomeFacade <<Facade>> #D6EEF2 {
+    - house : House
+    - executor : CommandExecutor
+    + turnOffNonEssentialDevices() : void
+    + turnOffAllDevices() : void
+    + turnOnEssentialDevices() : void
+    + pullUpOutdoorBlinds() : void
+    + closeAllWindows() : void
+    + findAvailableDevice(type : DeviceType) : Optional<Device>
+    + getDeviceConsumption(deviceId : String) : Map<ConsumptionType, Double>
+    + getTotalConsumption() : Map<ConsumptionType, Double>
+    + execute(cmd : DeviceCommand) : CommandResult
+  }
+
+  ContentAccessProxy -up-|> DeviceAccessProxy
+  DeviceAccessProxy ..> AccessDeniedException : <<throws>>
+  AbstractDeviceCommand ..|> DeviceCommand
+  TurnOnCommand -up-|> AbstractDeviceCommand
+  TurnOffCommand -up-|> AbstractDeviceCommand
+  StartUsingCommand -up-|> AbstractDeviceCommand
+  StopUsingCommand -up-|> AbstractDeviceCommand
+  RepairCommand -up-|> AbstractDeviceCommand
+  AddContentCommand -up-|> AbstractDeviceCommand
+  TakeContentCommand -up-|> AbstractDeviceCommand
+  AbstractDeviceCommand ..> DeviceAccessProxy : <<create>>
+  CommandExecutor ..> DeviceCommand : execute >
+  CommandExecutor *-- "*" CommandRecord
+  CommandRecord --> CommandResult
+  SmartHomeFacade --> "1" CommandExecutor
+  SmartHomeFacade ..> SystemActor
+  interface Report #E9F0D7 {
+    + getName() : String
+    + generate() : String
+  }
+
+  abstract class AbstractReport <<Template Method>> #E9F0D7 {
+    + generate() : String
+    # header() : String
+    # {abstract} body() : String
+    # footer() : String
+    # {abstract} getTitle() : String
+  }
+
+  class HouseConfigurationReport #E9F0D7 {
+    - house : House
+  }
+  class EventReport #E9F0D7 {
+    - events : List<Event>
+  }
+  class ActivityAndUsageReport #E9F0D7 {
+    - activityLog : ActivityLog
+  }
+  class ConsumptionReport #E9F0D7 {
+    - house : House
+    - priceList : PriceList
+  }
+
+  class HouseConfigurationVisitor #E9F0D7 {
+    - out : StringBuilder
+    - depth : int
+  }
+  class ConsumptionVisitor #E9F0D7 {
+    - perDevice : Map<Device, Map<ConsumptionType, Double>>
+    - totals : EnumMap<ConsumptionType, Double>
+  }
+
+  class PriceList #E9F0D7 {
+    - prices : EnumMap<ConsumptionType, BigDecimal>
+    + priceOf(type : ConsumptionType, amount : double) : BigDecimal
+  }
+
+  enum ReportType #E9F0D7 {
+    HOUSE_CONFIGURATION
+    EVENTS
+    ACTIVITY_AND_USAGE
+    CONSUMPTION
+  }
+
+  class ReportFactory <<Factory>> #E9F0D7 {
+    + create(type : ReportType, sim : Simulation) : Report
+  }
+
+  class ReportWriter #E9F0D7 {
+    + write(report : Report, dir : Path) : Path
+  }
+
+  AbstractReport ..|> Report
+  HouseConfigurationReport -up-|> AbstractReport
+  EventReport -up-|> AbstractReport
+  ActivityAndUsageReport -up-|> AbstractReport
+  ConsumptionReport -up-|> AbstractReport
+  HouseConfigurationReport ..> HouseConfigurationVisitor
+  ConsumptionReport ..> ConsumptionVisitor
+  ConsumptionReport --> PriceList
+  ReportFactory ..> Report : <<create>>
+  ReportFactory ..> ReportType
+  ReportWriter ..> Report
+  class DemandMonitor #EDE7E1 {
+    - waitingCounter : Map<String, Integer>
+    - threshold : int
+    + reportWaiting(resourceKey : String) : void
+    + onTick(tick : long) : void
+  }
+  class DeviceShop #EDE7E1 {
+    - deviceFactory : DeviceFactory
+    - purchases : List<Purchase>
+    + buyDevice(type : DeviceType, room : Room, buyer : Actor) : Device
+    + buyEquipment(type : SportType, buyer : Actor) : SportEquipment
+    + getPurchases() : List<Purchase>
+  }
+  class Purchase <<record>> #EDE7E1 {
+    + tick : long
+    + buyerName : String
+    + itemId : String
+    + itemType : String
+  }
+  DeviceShop *-- "*" Purchase
+' Vazby přes hranice balíčků (používá je celkový diagram)
+Device ..|> HouseComponent
+Device ..|> TickListener
+Device ..|> EventSource
+Room "1" o-- "*" Device : devices
+Device --> "1" DeviceState : state
+Device ..> LoadLevel
+Sensor -up-|> Device
+Sensor --> "1" Weather
+
+Inhabitant ..|> HouseComponent
+Inhabitant ..|> TickListener
+Inhabitant ..|> EventSource
+House *-- "*" Inhabitant
+Room o-- "*" Inhabitant : occupants
+House *-- "1" EquipmentPool
+EquipmentPool --> "1" Room : storage
+SportEquipment ..|> HouseComponent
+Inhabitant --> "1" ActivityStrategy
+Inhabitant --> "0..1" Activity : current
+Inhabitant o-- "*" Task : pending
+PermissionSet ..> DeviceAction
+PermissionSet ..> SportType
+Person --> "*" DeviceType : repairSkills
+
+DeviceUsageActivity --> "0..1" Device
+SportActivity --> "0..1" SportEquipment
+SportActivity --> "1" EquipmentPool
+RepairTask --> "1" Device
+Task --> "0..1" Event
+
+Event --> "0..1" Room : location
+InhabitantEventHandler --> "1" Inhabitant
+DeviceEventHandler --> "1" Device
+SystemEventHandler --> "1" SmartHomeFacade
+
+DeviceAccessProxy ..|> DeviceApi
+DeviceAccessProxy --> "1" Device : target
+DeviceAccessProxy --> "1" Actor
+ContentAccessProxy ..|> ContentHolder
+SystemActor ..|> Actor
+SmartHomeFacade --> "1" House
+CommandExecutor --> "1" ActivityLog
+
+HouseConfigurationVisitor ..|> HouseVisitor
+ConsumptionVisitor ..|> HouseVisitor
+EventReport ..> Event
+ActivityAndUsageReport --> ActivityLog
+
+Simulation *-- "1" House
+Simulation *-- "1" EventBus
+Simulation *-- "1" CommandExecutor
+Simulation *-- "1" SmartHomeFacade
+Simulation *-- "1" ActivityLog
+Simulation *-- "1" DemandMonitor
+Simulation *-- "1" DeviceShop
+Simulation ..> HouseConfigLoader
+Simulation ..> ReportFactory
+HouseDirector ..> HouseBuilder
+HouseDirector ..> DeviceFactory
+
+DemandMonitor ..|> TickListener
+DemandMonitor ..> EventBus : RESOURCE_SHORTAGE
+DeviceShop ..> DeviceFactory
+
+legend top left
+|= Barva |= Balíček |
+|<#FDE2E4>   | simulation |
+|<#E2ECE9>   | config |
+|<#DDEBF7>   | house |
+|<#FFF1C1>   | device |
+|<#FFF8DC>   | device (typy zařízení) |
+|<#FCE3C4>   | device.state |
+|<#F8D9A8>   | device.sensor |
+|<#E4DFF5>   | inhabitant |
+|<#EFE6F9>   | activity |
+|<#D9F2E6>   | sport |
+|<#FAD4D8>   | event |
+|<#D6EEF2>   | api |
+|<#E9F0D7>   | report |
+|<#EDE7E1>   | shop |
+endlegend
+@enduml

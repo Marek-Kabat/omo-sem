@@ -1,0 +1,44 @@
+@startuml 16-usecase
+!include common.iuml
+skinparam linetype polyline
+left to right direction
+title Případy užití – aktéři a jejich interakce s domem
+actor "Člen domácnosti" as M
+actor "Táta" as F
+actor "Máma" as Mo
+actor "Dítě" as K
+actor "Mazlíček" as Pet
+actor "Systém (SmartHomeFacade)" as Sys
+actor "Senzor / zařízení" as Sen
+F -up-|> M
+Mo -up-|> M
+K -up-|> M
+
+rectangle "Smart Home" {
+  usecase "UC1 Použít spotřebič" as UC1
+  usecase "UC2 Naplnit / vybrat obsah\n(lednice, CD, kávovar)" as UC2
+  usecase "UC3 Sportovat\n(půjčit náčiní)" as UC3
+  usecase "UC4 Opravit zařízení" as UC4
+  usecase "UC5 Odbavit událost" as UC5
+  usecase "UC6 Hromadně vypnout\nnedůležitá zařízení" as UC6
+  usecase "UC7 Vytáhnout žaluzie" as UC7
+  usecase "UC8 Generovat událost" as UC8
+  usecase "UC9 Koupit nové zařízení" as UC9
+  usecase "UC10 Zjistit spotřebu" as UC10
+  usecase "UC11 Vygenerovat reporty" as UC11
+}
+M --> UC1
+M --> UC2
+M --> UC3
+M --> UC5
+F --> UC4
+F --> UC9
+Pet --> UC8
+Pet --> UC1
+Sen --> UC8
+Sys --> UC6
+Sys --> UC7
+Sys --> UC5
+Sys --> UC10
+Sys --> UC11
+@enduml

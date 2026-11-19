@@ -1,0 +1,178 @@
+{
+  "name": "Rodinný dům Novákových",
+  "simulation": { "ticks": 672, "tickMinutes": 15, "seed": 42 },
+  "floors": [
+    {
+      "level": 0,
+      "name": "Přízemí",
+      "rooms": [
+        {
+          "id": "hall", "name": "Předsíň", "type": "HALL",
+          "windows": [],
+          "devices": [
+            { "id": "light-hall", "type": "LIGHT", "name": "Světlo v předsíni", "essential": false, "lifetimeTicks": 5000 },
+            { "id": "breaker", "type": "CIRCUIT_BREAKER", "name": "Hlavní jistič", "essential": true, "lifetimeTicks": 100000,
+              "params": { "tripProbability": 0.002 } }
+          ]
+        },
+        {
+          "id": "living", "name": "Obývací pokoj", "type": "LIVING_ROOM",
+          "windows": [
+            { "id": "w-living-1", "blind": true, "outdoorBlind": true },
+            { "id": "w-living-2", "blind": true, "outdoorBlind": true }
+          ],
+          "devices": [
+            { "id": "tv-living", "type": "TV", "name": "Televize Samsung", "essential": false, "lifetimeTicks": 2500 },
+            { "id": "cd-living", "type": "CD_PLAYER", "name": "CD přehrávač", "essential": false, "lifetimeTicks": 2000,
+              "params": { "cd": "Beatles – Abbey Road" } },
+            { "id": "light-living", "type": "LIGHT", "name": "Lustr", "essential": false, "lifetimeTicks": 5000 },
+            { "id": "ac-living", "type": "AIR_CONDITIONER", "name": "Klimatizace", "essential": false, "lifetimeTicks": 3000,
+              "params": { "targetTemperature": 22.0 } },
+            { "id": "temp-living", "type": "TEMPERATURE_SENSOR", "name": "Teploměr obývák", "essential": true, "lifetimeTicks": 100000,
+              "params": { "low": 18.0, "high": 26.0 } }
+          ]
+        },
+        {
+          "id": "kitchen", "name": "Kuchyně", "type": "KITCHEN",
+          "windows": [ { "id": "w-kitchen", "blind": true, "outdoorBlind": false } ],
+          "devices": [
+            { "id": "fridge", "type": "FRIDGE", "name": "Lednice", "essential": true, "lifetimeTicks": 20000,
+              "params": { "capacity": 20, "food": { "mléko": 4, "sýr": 3, "šunka": 3, "jogurt": 4 } } },
+            { "id": "stove", "type": "STOVE", "name": "Plynový sporák", "essential": false, "lifetimeTicks": 6000 },
+            { "id": "microwave", "type": "MICROWAVE", "name": "Mikrovlnka", "essential": false, "lifetimeTicks": 2000 },
+            { "id": "dishwasher", "type": "DISHWASHER", "name": "Myčka Bosch", "essential": false, "lifetimeTicks": 1500,
+              "params": { "programTicks": 6 } },
+            { "id": "coffee", "type": "COFFEE_MACHINE", "name": "Kávovar", "essential": false, "lifetimeTicks": 1200,
+              "params": { "capsules": 10 } },
+            { "id": "light-kitchen", "type": "LIGHT", "name": "Světlo v kuchyni", "essential": false, "lifetimeTicks": 5000 },
+            { "id": "humidity-kitchen", "type": "HUMIDITY_SENSOR", "name": "Čidlo vlhkosti kuchyně", "essential": true,
+              "lifetimeTicks": 100000, "params": { "leakProbability": 0.001 } }
+          ]
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "Patro",
+      "rooms": [
+        {
+          "id": "bedroom", "name": "Ložnice rodičů", "type": "BEDROOM",
+          "windows": [ { "id": "w-bedroom", "blind": true, "outdoorBlind": true } ],
+          "devices": [
+            { "id": "light-bedroom", "type": "LIGHT", "name": "Lampička", "essential": false, "lifetimeTicks": 5000 },
+            { "id": "tv-bedroom", "type": "TV", "name": "Malá televize", "essential": false, "lifetimeTicks": 2500 }
+          ]
+        },
+        {
+          "id": "boys", "name": "Pokoj Tomáše a Adama", "type": "KIDS_ROOM",
+          "windows": [ { "id": "w-boys", "blind": true, "outdoorBlind": true } ],
+          "devices": [
+            { "id": "pc-tomas", "type": "COMPUTER", "name": "Herní počítač", "essential": false, "lifetimeTicks": 3000 },
+            { "id": "light-boys", "type": "LIGHT", "name": "Stropní světlo", "essential": false, "lifetimeTicks": 5000 }
+          ]
+        },
+        {
+          "id": "eva", "name": "Pokoj Evy", "type": "KIDS_ROOM",
+          "windows": [ { "id": "w-eva", "blind": true, "outdoorBlind": false } ],
+          "devices": [
+            { "id": "pc-eva", "type": "COMPUTER", "name": "Notebook", "essential": false, "lifetimeTicks": 3000 },
+            { "id": "light-eva", "type": "LIGHT", "name": "Stolní lampa", "essential": false, "lifetimeTicks": 5000 }
+          ]
+        },
+        {
+          "id": "bathroom", "name": "Koupelna", "type": "BATHROOM",
+          "windows": [ { "id": "w-bathroom", "blind": false, "outdoorBlind": false } ],
+          "devices": [
+            { "id": "washer", "type": "WASHING_MACHINE", "name": "Pračka", "essential": false, "lifetimeTicks": 1500,
+              "params": { "programTicks": 8 } },
+            { "id": "boiler", "type": "GAS_BOILER", "name": "Plynový kotel", "essential": true, "lifetimeTicks": 30000,
+              "params": { "targetTemperature": 21.0 } },
+            { "id": "light-bathroom", "type": "LIGHT", "name": "Světlo v koupelně", "essential": false, "lifetimeTicks": 5000 },
+            { "id": "humidity-bathroom", "type": "HUMIDITY_SENSOR", "name": "Čidlo vlhkosti koupelna", "essential": true,
+              "lifetimeTicks": 100000, "params": { "leakProbability": 0.002 } }
+          ]
+        }
+      ]
+    }
+  ],
+  "outsideAreas": [
+    {
+      "id": "garage", "name": "Garáž", "type": "GARAGE",
+      "windows": [],
+      "devices": [
+        { "id": "light-garage", "type": "LIGHT", "name": "Zářivka v garáži", "essential": false, "lifetimeTicks": 5000 },
+        { "id": "fridge-garage", "type": "FRIDGE", "name": "Lednice na nápoje", "essential": false, "lifetimeTicks": 20000,
+          "params": { "capacity": 12, "food": { "pivo": 6, "limonáda": 4 } } }
+      ]
+    },
+    {
+      "id": "garden", "name": "Zahrada", "type": "GARDEN",
+      "windows": [],
+      "devices": [
+        { "id": "wind", "type": "WIND_SENSOR", "name": "Anemometr", "essential": true, "lifetimeTicks": 100000,
+          "params": { "threshold": 15.0 } },
+        { "id": "meteo", "type": "WEATHER_STATION", "name": "Meteostanice", "essential": true, "lifetimeTicks": 100000 },
+        { "id": "light-garden", "type": "LIGHT", "name": "Zahradní lampa", "essential": false, "lifetimeTicks": 5000 }
+      ]
+    }
+  ],
+  "inhabitants": [
+    {
+      "id": "petr", "name": "Petr (táta)", "kind": "PERSON", "role": "FATHER", "age": 42, "startRoom": "living",
+      "permissions": { "*": ["TURN_ON", "TURN_OFF", "USE", "FILL", "REPAIR", "BUY"] },
+      "repairSkills": ["TV", "WASHING_MACHINE", "DISHWASHER", "COMPUTER", "LIGHT", "CD_PLAYER", "MICROWAVE",
+                       "AIR_CONDITIONER", "GAS_BOILER", "CIRCUIT_BREAKER"],
+      "sports": ["BIKE", "SKIS", "SNOWBOARD"]
+    },
+    {
+      "id": "jana", "name": "Jana (máma)", "kind": "PERSON", "role": "MOTHER", "age": 39, "startRoom": "kitchen",
+      "permissions": { "*": ["TURN_ON", "TURN_OFF", "USE", "FILL", "BUY"], "COFFEE_MACHINE": ["TURN_ON", "TURN_OFF", "USE", "FILL", "REPAIR"] },
+      "repairSkills": ["COFFEE_MACHINE"],
+      "sports": ["BIKE", "SKIS", "INLINE_SKATES"]
+    },
+    {
+      "id": "tomas", "name": "Tomáš (syn)", "kind": "PERSON", "role": "SON", "age": 14, "startRoom": "boys",
+      "permissions": {
+        "TV": ["TURN_ON", "TURN_OFF", "USE"], "COMPUTER": ["TURN_ON", "TURN_OFF", "USE", "REPAIR"],
+        "CD_PLAYER": ["TURN_ON", "TURN_OFF", "USE", "FILL"], "MICROWAVE": ["TURN_ON", "TURN_OFF", "USE"],
+        "FRIDGE": ["USE", "FILL"], "LIGHT": ["TURN_ON", "TURN_OFF", "USE"], "DISHWASHER": ["TURN_ON", "TURN_OFF", "USE"]
+      },
+      "repairSkills": ["COMPUTER"],
+      "sports": ["BIKE", "SKIS", "SNOWBOARD", "SCOOTER"]
+    },
+    {
+      "id": "eva", "name": "Eva (dcera)", "kind": "PERSON", "role": "DAUGHTER", "age": 10, "startRoom": "eva",
+      "permissions": {
+        "TV": ["TURN_ON", "TURN_OFF", "USE"], "COMPUTER": ["TURN_ON", "TURN_OFF", "USE"],
+        "CD_PLAYER": ["TURN_ON", "TURN_OFF", "USE", "FILL"], "FRIDGE": ["USE"], "LIGHT": ["TURN_ON", "TURN_OFF", "USE"]
+      },
+      "repairSkills": [],
+      "sports": ["BIKE", "SCOOTER", "INLINE_SKATES", "SKIS"]
+    },
+    {
+      "id": "adam", "name": "Adam (miminko)", "kind": "PERSON", "role": "BABY", "age": 1, "startRoom": "boys",
+      "permissions": {}, "repairSkills": [], "sports": []
+    },
+    {
+      "id": "micka", "name": "Micka (kočka)", "kind": "PET", "role": "CAT", "startRoom": "living",
+      "permissions": { "TV": ["TURN_ON"] }, "repairSkills": [], "sports": []
+    },
+    {
+      "id": "rex", "name": "Rex (pes)", "kind": "PET", "role": "DOG", "startRoom": "garden",
+      "permissions": {}, "repairSkills": [], "sports": []
+    },
+    {
+      "id": "pepik", "name": "Pepík (křeček)", "kind": "PET", "role": "HAMSTER", "startRoom": "eva",
+      "permissions": {}, "repairSkills": [], "sports": []
+    }
+  ],
+  "equipment": [
+    { "id": "bike-1", "type": "BIKE", "name": "Horské kolo Author" },
+    { "id": "bike-2", "type": "BIKE", "name": "Dětské kolo" },
+    { "id": "skis-1", "type": "SKIS", "name": "Lyže Atomic 170 cm" },
+    { "id": "skis-2", "type": "SKIS", "name": "Lyže Elan 150 cm" },
+    { "id": "snowboard-1", "type": "SNOWBOARD", "name": "Snowboard Burton" },
+    { "id": "scooter-1", "type": "SCOOTER", "name": "Koloběžka" },
+    { "id": "inline-1", "type": "INLINE_SKATES", "name": "Kolečkové brusle" }
+  ]
+}

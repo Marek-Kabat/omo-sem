@@ -1,0 +1,107 @@
+package "event" {
+  interface EventSource {
+    + getSourceName() : String
+    + getLocation() : Room
+  }
+
+  class Event {
+    - id : long
+    - type : EventType
+    - severity : Severity
+    - source : EventSource
+    - location : Room
+    - createdAt : long
+    - handledBy : List<String>
+    + markHandledBy(handlerName : String) : void
+    + isHandled() : boolean
+    + getType() : EventType
+    + getSeverity() : Severity
+  }
+
+  enum Severity {
+    INFO
+    WARNING
+    ALERT
+  }
+
+  enum EventType {
+    STORM_WARNING
+    STRONG_WIND
+    POWER_OUTAGE
+    POWER_RESTORED
+    WATER_LEAK
+    HIGH_TEMPERATURE
+    LOW_TEMPERATURE
+    DEVICE_BROKEN
+    DEVICE_REPAIRED
+    PROGRAM_FINISHED
+    FRIDGE_EMPTY
+    BABY_NEEDS_CHANGE
+    PET_HUNGRY
+    DOG_WANTS_WALK
+    RESOURCE_SHORTAGE
+    - defaultSeverity : Severity
+  }
+
+  class EventBus <<Observer>> {
+    - subscribers : Map<EventType, List<EventListener>>
+    - pending : Queue<Event>
+    - history : List<Event>
+    + publish(e : Event) : void
+    + subscribe(type : EventType, l : EventListener) : void
+    + dispatchPending() : void
+    + getHistory() : List<Event>
+  }
+
+  interface EventListener {
+    + onEvent(e : Event) : void
+  }
+
+  abstract class EventHandler <<Chain of Responsibility>> {
+    - next : EventHandler
+    - continueAfterHandling : boolean
+    + linkWith(next : EventHandler) : EventHandler
+    + onEvent(e : Event) : void
+    # {abstract} canHandle(e : Event) : boolean
+    # {abstract} handle(e : Event) : void
+    # {abstract} getHandlerName() : String
+  }
+
+  class InhabitantEventHandler {
+    - inhabitant : Inhabitant
+    - reaction : Function<Event, Task>
+  }
+
+  class DeviceEventHandler {
+    - device : Device
+    - reaction : BiConsumer<Device, Event>
+  }
+
+  class SystemEventHandler {
+    - name : String
+    - facade : SmartHomeFacade
+    - reaction : BiConsumer<SmartHomeFacade, Event>
+  }
+
+  class UnhandledEventHandler
+
+  class EventHandlerRegistry {
+    + buildChains(house : House, bus : EventBus, facade : SmartHomeFacade) : void
+    - chain(handlers : EventHandler...) : EventHandler
+  }
+
+  Event --> "1" EventType
+  Event --> "1" Severity
+  Event --> "1" EventSource : source
+  EventType --> Severity
+  EventBus o-- "*" EventListener
+  EventBus *-- "*" Event : history
+  EventHandler ..|> EventListener
+  EventHandler --> "0..1" EventHandler : next
+  InhabitantEventHandler -up-|> EventHandler
+  DeviceEventHandler -up-|> EventHandler
+  SystemEventHandler -up-|> EventHandler
+  UnhandledEventHandler -up-|> EventHandler
+  EventHandlerRegistry ..> EventHandler : <<create>>
+  EventHandlerRegistry ..> EventBus : subscribe
+}

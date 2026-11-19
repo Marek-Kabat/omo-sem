@@ -1,0 +1,36 @@
+' Společné nastavení vzhledu všech diagramů
+set separator none
+skinparam dpi 110
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 11
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #3B4A5A
+  ArrowColor #3B4A5A
+  HeaderBackgroundColor #E8EEF5
+  StereotypeFontColor #8A3B12
+}
+skinparam class<<external>> {
+  BackgroundColor #F4F4F4
+  BorderColor #9AA5B1
+  FontColor #6B7785
+  HeaderBackgroundColor #F4F4F4
+}
+skinparam package {
+  BackgroundColor #FAFBFC
+  BorderColor #9AA5B1
+  FontColor #3B4A5A
+}
+skinparam note {
+  BackgroundColor #FFF8DC
+  BorderColor #C9B458
+}
+hide empty members
+hide <<external>> members
+hide <<external>> circle

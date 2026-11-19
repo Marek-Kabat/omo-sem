@@ -1,0 +1,103 @@
+package "api" {
+  class DeviceAccessProxy <<Protection Proxy>> {
+    - target : Device
+    - actor : Actor
+    - check(action : DeviceAction) : void
+    + turnOn() : void
+    + turnOff() : void
+    + startUsing(user : Actor) : void
+    + stopUsing() : void
+    + repair(by : Actor) : void
+    + getState() : DeviceState
+    + getConsumption() : Map<ConsumptionType, Double>
+  }
+
+  class "ContentAccessProxy<T>" as ContentAccessProxy {
+    - content : ContentHolder<T>
+    + addItem(item : T) : void
+    + takeItem() : Optional<T>
+  }
+
+  class AccessDeniedException
+
+  interface DeviceCommand <<Command>> {
+    + execute() : CommandResult
+    + getActor() : Actor
+    + getDevice() : Device
+    + getAction() : DeviceAction
+  }
+
+  abstract class AbstractDeviceCommand {
+    # actor : Actor
+    # device : Device
+    # api() : DeviceApi
+  }
+
+  class TurnOnCommand
+  class TurnOffCommand
+  class StartUsingCommand
+  class StopUsingCommand
+  class RepairCommand
+  class "AddContentCommand<T>" as AddContentCommand {
+    - item : T
+  }
+  class "TakeContentCommand<T>" as TakeContentCommand
+
+  class CommandResult <<record>> {
+    + success : boolean
+    + message : String
+  }
+
+  class CommandExecutor <<Invoker>> {
+    - history : List<CommandRecord>
+    - activityLog : ActivityLog
+    - clock : SimulationClock
+    + execute(cmd : DeviceCommand) : CommandResult
+    + getHistory() : List<CommandRecord>
+  }
+
+  class CommandRecord <<record>> {
+    + tick : long
+    + actorName : String
+    + deviceId : String
+    + action : DeviceAction
+    + result : CommandResult
+  }
+
+  class SystemActor <<Singleton>> {
+    - {static} INSTANCE : SystemActor
+    + {static} getInstance() : SystemActor
+    + getPermissions() : PermissionSet
+  }
+
+  class SmartHomeFacade <<Facade>> {
+    - house : House
+    - executor : CommandExecutor
+    + turnOffNonEssentialDevices() : void
+    + turnOffAllDevices() : void
+    + turnOnEssentialDevices() : void
+    + pullUpOutdoorBlinds() : void
+    + closeAllWindows() : void
+    + findAvailableDevice(type : DeviceType) : Optional<Device>
+    + getDeviceConsumption(deviceId : String) : Map<ConsumptionType, Double>
+    + getTotalConsumption() : Map<ConsumptionType, Double>
+    + execute(cmd : DeviceCommand) : CommandResult
+  }
+
+  ContentAccessProxy -up-|> DeviceAccessProxy
+  DeviceAccessProxy ..> AccessDeniedException : <<throws>>
+  AbstractDeviceCommand ..|> DeviceCommand
+  TurnOnCommand -up-|> AbstractDeviceCommand
+  TurnOffCommand -up-|> AbstractDeviceCommand
+  StartUsingCommand -up-|> AbstractDeviceCommand
+  StopUsingCommand -up-|> AbstractDeviceCommand
+  RepairCommand -up-|> AbstractDeviceCommand
+  AddContentCommand -up-|> AbstractDeviceCommand
+  TakeContentCommand -up-|> AbstractDeviceCommand
+  AbstractDeviceCommand ..> DeviceAccessProxy : <<create>>
+  CommandExecutor ..> DeviceCommand : execute >
+  CommandExecutor *-- "*" CommandRecord
+  CommandRecord --> CommandResult
+  SmartHomeFacade --> "1" CommandExecutor
+  SmartHomeFacade ..> SystemActor
+}

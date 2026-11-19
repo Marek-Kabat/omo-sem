@@ -1,0 +1,34 @@
+@startuml 04-inhabitants
+!include common.iuml
+skinparam linetype polyline
+title Obyvatelé, oprávnění, aktivity a sportovní vybavení
+!include model/inhabitant.iuml
+!include model/activity.iuml
+!include model/sport.iuml
+
+class Room <<external>>
+class Device <<external>>
+class DeviceType <<external>>
+class DeviceAction <<external>>
+class Event <<external>>
+class HouseComponent <<external>>
+class TickListener <<external>>
+class EventSource <<external>>
+Inhabitant ..|> HouseComponent
+Inhabitant ..|> TickListener
+Inhabitant ..|> EventSource
+SportEquipment ..|> HouseComponent
+Inhabitant --> "1" Room : currentRoom
+EquipmentPool --> "1" Room : storage
+Inhabitant --> "1" ActivityStrategy
+Inhabitant --> "0..1" Activity : current
+Inhabitant o-- "*" Task : pending
+PermissionSet ..> DeviceType
+PermissionSet ..> DeviceAction
+PermissionSet ..> SportType
+DeviceUsageActivity --> "0..1" Device
+SportActivity --> "0..1" SportEquipment
+SportActivity --> "1" EquipmentPool
+RepairTask --> "1" Device
+Task --> "0..1" Event
+@enduml

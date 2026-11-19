@@ -1,0 +1,20 @@
+@startuml 01-house
+!include common.iuml
+title Dům – kompozitní struktura (Composite, Builder, Visitor)
+!include model/house.iuml
+
+class Device <<external>>
+class Inhabitant <<external>>
+class SportEquipment <<external>>
+class EquipmentPool <<external>>
+class ConsumptionType <<external>>
+
+Device ..|> HouseComponent
+Inhabitant ..|> HouseComponent
+SportEquipment ..|> HouseComponent
+Room "1" o-- "*" Device : devices
+Room o-- "*" Inhabitant : occupants
+House *-- "*" Inhabitant
+House *-- "1" EquipmentPool
+EquipmentPool o-- "*" SportEquipment
+@enduml
