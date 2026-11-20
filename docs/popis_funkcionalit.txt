@@ -1,0 +1,128 @@
+SMART HOME – POPIS FUNKCIONALIT
+===============================
+
+SYSTÉMOVÉ POŽADAVKY
+-------------------
+
+FR-01 Zařízení a jejich umístění
+  Dům obsahuje 12 typů spotřebičů: lednici, sporák, mikrovlnku, televizi, pračku,
+  myčku, kávovar, CD přehrávač, světlo, klimatizaci, počítač a plynový kotel.
+  K tomu má 5 typů senzorů: teploměr, čidlo větru, meteostanici, čidlo vlhkosti
+  a jistič. Každé zařízení patří právě jedné místnosti. Místnost leží na patře,
+  nebo je venkovním prostorem (garáž, zahrada). Zařízení se mezi místnostmi
+  nepřesouvají.
+
+FR-02 Ovládání přes API
+  - Uživatelské ovládání: člen domácnosti posílá příkazy, například zapni,
+    použij, vypni, naplň nebo oprav. Každý příkaz vrátí výsledek: úspěch, nebo
+    důvod selhání.
+  - Systémové ovládání: fasáda domu nabízí hromadné operace. Umí vypnout všechna
+    nedůležitá zařízení, zavřít okna, vytáhnout venkovní žaluzie a zjistit
+    spotřebu. Systém smí zařízení zapínat a vypínat, ale nesmí je používat ani
+    opravovat.
+
+FR-03 Stav a obsah zařízení
+  - Zařízení má stavy Vypnuto -> Zapnuto -> V provozu a Rozbito. Použít lze jen
+    zapnuté zařízení, takže na vypnutém sporáku nelze vařit.
+  - Spotřeba se řídí stavem. Vypnuté zařízení nespotřebovává nic, zapnuté má
+    pohotovostní spotřebu a zařízení v provozu plnou spotřebu.
+  - Některá zařízení mají obsah:
+      * lednice obsahuje jídlo, a když dojde, vznikne událost,
+      * CD přehrávač obsahuje CD a bez něj nehraje,
+      * kávovar obsahuje kapsle.
+
+FR-04 Oprávnění
+  Každý člen má předem určeno, se kterými typy zařízení smí pracovat a jaké akce
+  smí provádět (zapnout, vypnout, použít, naplnit, opravit, koupit). Oprávnění se
+  kontroluje při každé interakci a nepovolená akce je odmítnuta. Kočka smí jen
+  zapnout televizi, myčku zapnout nemůže. Televizi opraví jen táta.
+
+FR-05 Volný čas
+  Členové tráví volný čas zhruba z 50 % používáním zařízení a z 50 % sportem
+  (kolo, lyže, snowboard, koloběžka, brusle). Když není volné zařízení nebo
+  náčiní, osoba čeká a zkusí to znovu v dalším kroku. Miminko a mazlíčci
+  nesportují.
+
+FR-06 Spotřeba
+  Každé zařízení měří spotřebu elektřiny, vody a plynu. Spotřebu jednoho
+  zařízení i celého domu lze zjistit přes API.
+
+FR-07 Poloha a události
+  Každé zařízení i osoba je v každém okamžiku právě v jedné místnosti. Osoby se
+  mezi místnostmi přesouvají. Zařízení, senzory i osoby náhodně generují
+  události. Událost je buď informace, nebo upozornění (alert).
+
+FR-08 Odbavení událostí
+  Každý typ události má řetěz vhodných obsluhovatelů. Událost obslouží osoba,
+  zařízení nebo systém.
+
+    Silný vítr                  -> systém vytáhne venkovní žaluzie
+    Výpadek proudu              -> systém vypne nedůležitá zařízení,
+                                   táta nahodí jistič
+    Prasklá trubka              -> máma zavolá hasiče, táta uzavře vodu,
+                                   dcera vyloví křečka
+    Miminko potřebuje přebalit  -> táta se skryje, máma přebalí
+    Rozbité zařízení            -> opraví ho člen, který to umí,
+                                   jinak se koupí nové
+    Prázdná lednice             -> máma nakoupí a lednici doplní
+
+FR-09 Reporty
+  Na konci běhu se do textových souborů vygenerují čtyři reporty:
+  - HouseConfigurationReport – hierarchie dům -> patro -> místnost -> okno ->
+    žaluzie a zařízení, dále obyvatelé a sportovní náčiní,
+  - EventReport – události seskupené podle typu, zdroje a toho, kdo je odbavil,
+  - ActivityAndUsageReport – kolikrát která osoba použila které zařízení
+    a náčiní,
+  - ConsumptionReport – spotřeba elektřiny, vody a plynu po zařízeních a celkem.
+
+FR-10 Připravená konfigurace
+  Konfigurace domu se načítá z JSON nebo přímo z Java třídy. Obsahuje:
+  - 5 členů domácnosti a 3 mazlíčky,
+  - 29 zařízení 17 druhů,
+  - 7 kusů sportovního náčiní,
+  - 7 místností, garáž a zahradu.
+
+Bonus B1 – Životnost a opravy
+  Zařízení se používáním opotřebovává a může se rozbít. Rozbité zařízení
+  nereaguje na uživatele ani na systém. Opravit ho mohou vybraní členové a oprava
+  má přednost před volnočasovými aktivitami.
+
+Bonus B2 – Nákup zařízení
+  Když osoby opakovaně čekají na stejný typ zařízení nebo náčiní, člen
+  s oprávněním „koupit“ pořídí další kus.
+
+
+UŽIVATELSKÉ SCÉNÁŘE
+-------------------
+
+1. Puštění televize
+   Syn najde volnou televizi, přejde do obýváku, televizi zapne a dívá se.
+   Spotřeba se počítá a použití se zaznamená. Když je televize obsazená, syn
+   čeká. Když je rozbitá, vznikne událost o poruše.
+
+2. Vaření
+   Máma vezme jídlo z lednice a chce vařit. Sporák je vypnutý, takže ho musí
+   nejdřív zapnout. Pokud je lednice prázdná, vznikne událost a máma jde
+   nakoupit.
+
+3. Sport
+   Dcera si v garáži půjčí kolo a jezdí na zahradě. Když jsou obě kola půjčená,
+   čeká. Pokud se čekání opakuje, táta koupí další kolo.
+
+4. Bouřka
+   Meteostanice ohlásí bouřku. Systém zavře okna a vypne nedůležitá zařízení.
+   Lednice, kotel a senzory běží dál.
+
+5. Porucha pračky
+   Pračce dojde životnost a rozbije se. Táta přeruší svou aktivitu, podle návodu
+   pračku opraví a ta se vrátí do stavu Vypnuto.
+
+6. Prasklá trubka
+   Čidlo vlhkosti ohlásí únik vody. Máma zavolá hasiče, táta uzavře vodu a dcera
+   vyloví křečka. Zařízení na vodu jsou do opětovného otevření vody nedostupná.
+
+7. Výpadek proudu
+   Jistič vypadne. Systém vypne nedůležitá zařízení a táta jistič nahodí.
+
+8. Konec simulace
+   Systém vygeneruje všechny čtyři reporty do textových souborů.
