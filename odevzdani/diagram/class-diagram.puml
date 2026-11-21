@@ -1,0 +1,268 @@
+@startuml class-diagram
+skinparam dpi 120
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 11
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 40
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #3B4A5A
+  ArrowColor #3B4A5A
+  HeaderBackgroundColor #E8EEF5
+  StereotypeFontColor #8A3B12
+}
+hide empty members
+title Smart Home – class diagram
+
+' ---------- simulácia ----------
+class Simulation <<Singleton>> {
+  - {static} instance : Simulation
+  - house : House
+  - tick : int
+  + {static} getInstance() : Simulation
+  + run(ticks : int) : void
+  + generateReports() : void
+}
+
+interface HouseConfigLoader <<Strategy>> {
+  + load() : House
+}
+class JsonConfigLoader
+class JavaConfigLoader
+class HouseBuilder <<Builder>> {
+  + floor(name : String) : HouseBuilder
+  + room(name : String) : HouseBuilder
+  + device(d : Device) : HouseBuilder
+  + person(p : Person) : HouseBuilder
+  + build() : House
+}
+
+' ---------- dom ----------
+class House {
+  - floors : List<Floor>
+  - garden : Room
+  - persons : List<Person>
+  - equipment : List<SportEquipment>
+  + getAllDevices() : List<Device>
+}
+class Floor {
+  - name : String
+  - rooms : List<Room>
+}
+class Room {
+  - name : String
+  - devices : List<Device>
+  - windows : List<Window>
+  - persons : List<Person>
+}
+class Window {
+  - open : boolean
+  - blind : Blind
+  + close() : void
+}
+class Blind {
+  - down : boolean
+}
+
+' ---------- zariadenia ----------
+abstract class Device {
+  - name : String
+  - room : Room
+  - essential : boolean
+  - state : DeviceState
+  - consumption : Map<ConsumptionType, Double>
+  + turnOn() : void
+  + turnOff() : void
+  + use(p : Person) : void
+  + getConsumption() : Map<ConsumptionType, Double>
+  ~ setState(s : DeviceState) : void
+}
+class Fridge {
+  - food : List<String>
+  + takeFood() : String
+  + addFood(f : String) : void
+}
+class TV
+class WashingMachine
+class Computer
+class Stove
+class Light
+class AirConditioner
+class Dishwasher
+abstract class Sensor
+class WeatherStation
+
+class DeviceFactory <<Factory>> {
+  + create(type : DeviceType) : Device
+}
+enum DeviceType {
+  TV
+  FRIDGE
+  WASHING_MACHINE
+  COMPUTER
+  STOVE
+  LIGHT
+  AIR_CONDITIONER
+  DISHWASHER
+  WEATHER_STATION
+}
+enum ConsumptionType {
+  ELECTRICITY
+  WATER
+  GAS
+}
+
+interface DeviceState <<State>> {
+  + turnOn(d : Device) : void
+  + turnOff(d : Device) : void
+  + use(d : Device) : void
+}
+class OffState
+class OnState
+class InUseState
+
+' ---------- API ----------
+interface DeviceApi {
+  + turnOn() : void
+  + turnOff() : void
+  + use() : void
+  + getConsumption() : Map<ConsumptionType, Double>
+}
+class DeviceProxy <<Proxy>> {
+  - device : Device
+  - person : Person
+  + use() : void
+}
+class SmartHomeFacade <<Facade>> {
+  + turnOffNonEssential() : void
+  + closeWindows() : void
+  + getTotalConsumption() : Map<ConsumptionType, Double>
+}
+
+' ---------- osoby a šport ----------
+class Person {
+  - name : String
+  - role : Role
+  - room : Room
+  - allowedDevices : Set<DeviceType>
+  + moveTo(r : Room) : void
+  + doActivity() : void
+  + canUse(t : DeviceType) : boolean
+}
+enum Role {
+  FATHER
+  MOTHER
+  SON
+  DAUGHTER
+  BABY
+}
+class SportEquipment {
+  - name : String
+  - borrowed : boolean
+  + borrow(p : Person) : boolean
+  + giveBack() : void
+}
+
+' ---------- udalosti ----------
+class Event {
+  - type : EventType
+  - source : String
+  - handledBy : String
+}
+enum EventType {
+  STORM
+  FRIDGE_EMPTY
+
+}
+class EventManager <<Observer>> {
+  - handlers : Map<EventType, EventHandler>
+  - history : List<Event>
+  + publish(e : Event) : void
+}
+abstract class EventHandler <<Chain of Responsibility>> {
+  - next : EventHandler
+  + handle(e : Event) : void
+  # {abstract} canHandle(e : Event) : boolean
+}
+class PersonHandler {
+  - person : Person
+}
+class SystemHandler {
+  - facade : SmartHomeFacade
+}
+
+' ---------- reporty ----------
+interface Report {
+  + generate() : String
+}
+class HouseConfigurationReport
+class EventReport
+class ActivityAndUsageReport
+class ConsumptionReport
+
+' ---------- vzťahy ----------
+Simulation *-- "1" House
+Simulation *-- "1" EventManager
+Simulation ..> HouseConfigLoader
+Simulation ..> Report
+JsonConfigLoader ..|> HouseConfigLoader
+JavaConfigLoader ..|> HouseConfigLoader
+HouseConfigLoader ..> HouseBuilder
+HouseBuilder ..> DeviceFactory
+HouseBuilder ..> House : <<create>>
+
+House *-- "1..*" Floor
+House *-- "1" Room : garden
+House *-- "*" Person
+House *-- "*" SportEquipment
+Floor *-- "1..*" Room
+Room *-- "*" Window
+Window *-- "0..1" Blind
+Room o-- "*" Device
+Room o-- "*" Person
+
+Device ..|> DeviceApi
+DeviceProxy ..|> DeviceApi
+DeviceProxy --> "1" Device
+DeviceProxy --> "1" Person
+Device --> "1" DeviceState
+Device ..> ConsumptionType
+OffState ..|> DeviceState
+OnState ..|> DeviceState
+InUseState ..|> DeviceState
+DeviceFactory ..> DeviceType
+DeviceFactory ..> Device : <<create>>
+
+Fridge -up-|> Device
+TV -up-|> Device
+WashingMachine -up-|> Device
+Computer -up-|> Device
+Stove -up-|> Device
+Light -up-|> Device
+AirConditioner -up-|> Device
+Dishwasher -up-|> Device
+Sensor -up-|> Device
+WeatherStation -up-|> Sensor
+
+Person --> Role
+Person ..> DeviceProxy : používa
+Person ..> SportEquipment : požičiava
+
+SmartHomeFacade --> "1" House
+EventManager *-- "*" Event
+EventManager o-- "*" EventHandler
+Event --> EventType
+EventHandler --> "0..1" EventHandler : next
+PersonHandler -up-|> EventHandler
+SystemHandler -up-|> EventHandler
+PersonHandler --> Person
+SystemHandler --> SmartHomeFacade
+
+HouseConfigurationReport ..|> Report
+EventReport ..|> Report
+ActivityAndUsageReport ..|> Report
+ConsumptionReport ..|> Report
+@enduml
