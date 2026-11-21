@@ -1,0 +1,107 @@
+Popis funkcionalít
+==================
+
+1.) Zariadenia a ich umiestnenie
+    Dom obsahuje 8 druhov spotrebičov: televízia, chladnička, práčka, počítač,
+    sporák, svetlo, klimatizácia a umývačka riadu. Okrem nich obsahuje 3 druhy
+    senzorov: meteostanica, senzor vetra a istič. Každé zariadenie patrí práve
+    jednej miestnosti a medzi miestnosťami sa nehýbe. Miestnosť leží na
+    poschodí, alebo je vonkajším priestorom (záhrada).
+
+2.) Ovládanie cez API
+    - Používateľské: člen domácnosti posiela zariadeniu príkazy (zapni, použi,
+      vypni, naplň). Každý príkaz vráti výsledok – úspech, alebo dôvod
+      neúspechu.
+    - Systémové: systém vie zariadenia hromadne zapínať a vypínať, zatvárať
+      okná a vyťahovať žalúzie, ale zariadenia nevie používať.
+    - Každé zariadenie je označené ako nutné (chladnička, senzory), alebo
+      nedôležité. Pri búrke a výpadku prúdu ostávajú zapnuté len nutné
+      zariadenia.
+
+3.) Stav a obsah zariadení
+    - Zariadenia majú stavy vypnuté, zapnuté a používané. Používať sa môže len
+      zapnutý spotrebič, napr. na vypnutom sporáku sa nedá variť.
+    - Podľa stavu majú zariadenia inú spotrebu: vypnuté nič, zapnuté
+      pohotovostnú, používané plnú.
+    - Niektoré zariadenia majú obsah: chladnička obsahuje jedlo. Keď sa jedlo
+      minie, vznikne udalosť „prázdna chladnička“.
+
+4.) Oprávnenia
+    Každý člen má vopred definované, s ktorými druhmi zariadení smie
+    interagovať a aké akcie smie vykonať (zapnúť, vypnúť, použiť, naplniť).
+    Nepovolená akcia je odmietnutá. Napr. mačka nemôže zapnúť umývačku riadu,
+    dcéra nesmie používať sporák, bábätko nesmie nič.
+
+5.) Voľný čas
+    Členovia domácnosti trávia voľný čas približne z 50 % používaním
+    spotrebičov a z 50 % športom (bicykel, lyže). Ak nie je voľné zariadenie
+    alebo športové náradie, osoba čaká a skúsi to znova v ďalšom kroku.
+
+6.) Spotreba
+    Každé zariadenie má spotrebu elektriny, vody alebo plynu, závislú od typu
+    zariadenia a jeho stavu (napr. práčka spotrebúva elektrinu a vodu, sporák
+    plyn). Spotrebu jednotlivého zariadenia aj celého domu je možné zistiť cez
+    API.
+
+7.) Poloha a udalosti
+    - Každé zariadenie aj každá osoba je v každom okamihu práve v jednej
+      miestnosti. Osoby sa medzi miestnosťami presúvajú; ak niekto používa
+      zariadenie, musí byť v tej istej miestnosti.
+    - Zariadenia, senzory aj osoby náhodne generujú udalosti. Udalosť je buď
+      informácia, alebo upozornenie (alert).
+
+8.) Obsluha udalostí
+    Každý druh udalosti obslúži vhodná osoba, zariadenie alebo systém:
+      - silný vietor (senzor vetra)     -> systém vytiahne vonkajšie žalúzie
+      - búrka (meteostanica)            -> systém zatvorí okná a vypne
+                                           nedôležité zariadenia
+      - výpadok prúdu (istič)           -> systém vypne nedôležité zariadenia,
+                                           otec nahodí istič
+      - vysoká teplota                  -> klimatizácia sa zapne
+      - prázdna chladnička              -> mama nakúpi a chladničku doplní
+      - bábätko treba prebaliť          -> otec sa skryje, mama prebalí
+
+9.) Reporty
+    Na konci behu sa do textových súborov vygenerujú 4 reporty:
+      - HouseConfigurationReport – všetky konfiguračné dáta domu v hierarchii
+        (dom -> poschodie -> miestnosť -> okno -> žalúzie, zariadenia),
+        vrátane členov domácnosti a športového náradia
+      - EventReport – zoznam udalostí zoskupených podľa typu, zdroja a cieľovej
+        entity (kto udalosť obslúžil)
+      - ActivityAndUsageReport – koľkokrát ktorá osoba použila ktoré
+        zariadenie a športové náradie
+      - ConsumptionReport – spotreba elektriny, vody a plynu jednotlivých
+        zariadení a celého domu
+
+10.) Konfigurácia domu
+    Konfigurácia sa načíta z JSON alebo priamo z Java triedy. Obsahuje:
+      - 5 členov domácnosti (otec, mama, syn, dcéra, bábätko) a mačku,
+        každý s inými oprávneniami
+      - aspoň 20 zariadení 11 druhov (8 spotrebičov + 3 senzory)
+      - 5 kusov športového náradia (2 bicykle, 2 lyže, 1 snowboard)
+      - 6 miestností + záhrada
+
+
+Používateľské scenáre
+=====================
+
+1. Pustenie televízie
+   Syn nájde voľnú televíziu, prejde do obývačky, televíziu zapne a sleduje.
+   Spotreba sa počíta a použitie sa zaznamená. Keď je televízia obsadená, syn
+   čaká.
+
+2. Varenie
+   Mama zoberie jedlo z chladničky a chce variť. Sporák je vypnutý, takže ho
+   musí najprv zapnúť. Ak je chladnička prázdna, vznikne udalosť a mama ide
+   nakúpiť.
+
+3. Šport
+   Dcéra si požičia bicykel a jazdí na záhrade. Ak sú oba bicykle požičané,
+   čaká.
+
+4. Búrka
+   Meteostanica ohlási búrku. Systém zatvorí okná a vypne nedôležité
+   zariadenia. Chladnička a senzory bežia ďalej.
+
+5. Koniec simulácie
+   Systém vygeneruje všetky štyri reporty do textových súborov.
