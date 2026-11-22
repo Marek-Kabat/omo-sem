@@ -60,11 +60,8 @@ class Room {
 }
 class Window {
   - open : boolean
-  - blind : Blind
+  - blindDown : boolean
   + close() : void
-}
-class Blind {
-  - down : boolean
 }
 
 ' ---------- zariadenia ----------
@@ -222,7 +219,6 @@ House *-- "*" Person
 House *-- "*" SportEquipment
 Floor *-- "1..*" Room
 Room *-- "*" Window
-Window *-- "0..1" Blind
 Room o-- "*" Device
 Room o-- "*" Person
 

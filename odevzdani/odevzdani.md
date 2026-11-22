@@ -99,4 +99,4 @@ Používateľské scenáre:
 | Systém potřebuje jednoduše ovládat celý dům (vypnout nedůležitá zařízení, zavřít okna, zjistit spotřebu). | Facade | `SmartHomeFacade` skrývá procházení domu za jednoduché metody. |
 | Události vznikají v zařízeních i u osob a zdroj nemá znát, kdo je obslouží. | Observer | `EventManager` přijímá události (`publish`) a předává je obsluze; zároveň vede historii pro `EventReport`. |
 | Událost má obsloužit vhodná osoba nebo systém, případně postupně víc aktérů. | Chain of Responsibility | `EventHandler` s odkazem `next`; `PersonHandler` a `SystemHandler` událost buď obslouží, nebo pošlou dál. |
-| Hierarchie dům → patro → místnost → okno → žaluzie se musí jednotně procházet (konfigurační report). | Composite | Dům, patra a místnosti obsahují své prvky a report je prochází rekurzivně. |
+| Hierarchie dům → patro → místnost → okno se musí jednotně procházet (konfigurační report). | Composite | Dům, patra a místnosti obsahují své prvky a report je prochází rekurzivně. |
