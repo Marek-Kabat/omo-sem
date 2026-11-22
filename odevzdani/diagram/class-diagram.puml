@@ -17,7 +17,6 @@ skinparam class {
 hide empty members
 title Smart Home – class diagram
 
-' ---------- simulácia ----------
 class Simulation {
   - {static} instance : Simulation
   - house : House
@@ -40,7 +39,6 @@ class HouseBuilder {
   + build() : House
 }
 
-' ---------- dom ----------
 class House {
   - floors : List<Floor>
   - garden : Room
@@ -64,7 +62,6 @@ class Window {
   + close() : void
 }
 
-' ---------- zariadenia ----------
 abstract class Device {
   - name : String
   - room : Room
@@ -122,7 +119,6 @@ class OffState
 class OnState
 class InUseState
 
-' ---------- API ----------
 interface DeviceApi {
   + turnOn() : void
   + turnOff() : void
@@ -140,7 +136,6 @@ class SmartHomeFacade {
   + getTotalConsumption() : Map<ConsumptionType, Double>
 }
 
-' ---------- osoby a šport ----------
 class Person {
   - name : String
   - role : Role
@@ -165,7 +160,6 @@ class SportEquipment {
   + giveBack() : void
 }
 
-' ---------- udalosti ----------
 class Event {
   - type : EventType
   - source : String
@@ -193,7 +187,6 @@ class SystemHandler {
   - facade : SmartHomeFacade
 }
 
-' ---------- reporty ----------
 interface Report {
   + generate() : String
 }
@@ -202,7 +195,6 @@ class EventReport
 class ActivityAndUsageReport
 class ConsumptionReport
 
-' ---------- vzťahy ----------
 Simulation *-- "1" House
 Simulation *-- "1" EventManager
 Simulation ..> HouseConfigLoader

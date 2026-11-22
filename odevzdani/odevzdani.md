@@ -8,6 +8,13 @@ lang: cs
 
 ![](diagram/class-diagram.svg){.diagram}
 
+::: {.ai-note}
+**Použití AI:** Při přípravě tohoto dokumentu byl použit model Anthropic Claude Opus 5.5. AI pomohlo
+s vytvořením a vykreslením class diagramu ve formátu PlantUML (`.puml`) podle našeho popisu funkcionalit,
+se zkontrolováním a doplněním nesrovnalostí v popisu funkcionalit a s formulací výpisu návrhových vzorů.
+Výsledek jsme prošli, upravili (zjednodušení diagramu, výběr vzorů) a rozumíme mu.
+:::
+
 # Popis funkcionalít
 
 ```{=html}
