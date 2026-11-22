@@ -18,7 +18,7 @@ hide empty members
 title Smart Home – class diagram
 
 ' ---------- simulácia ----------
-class Simulation <<Singleton>> {
+class Simulation {
   - {static} instance : Simulation
   - house : House
   - tick : int
@@ -27,12 +27,12 @@ class Simulation <<Singleton>> {
   + generateReports() : void
 }
 
-interface HouseConfigLoader <<Strategy>> {
+interface HouseConfigLoader {
   + load() : House
 }
 class JsonConfigLoader
 class JavaConfigLoader
-class HouseBuilder <<Builder>> {
+class HouseBuilder {
   + floor(name : String) : HouseBuilder
   + room(name : String) : HouseBuilder
   + device(d : Device) : HouseBuilder
@@ -95,7 +95,7 @@ class Dishwasher
 abstract class Sensor
 class WeatherStation
 
-class DeviceFactory <<Factory>> {
+class DeviceFactory {
   + create(type : DeviceType) : Device
 }
 enum DeviceType {
@@ -115,7 +115,7 @@ enum ConsumptionType {
   GAS
 }
 
-interface DeviceState <<State>> {
+interface DeviceState {
   + turnOn(d : Device) : void
   + turnOff(d : Device) : void
   + use(d : Device) : void
@@ -131,12 +131,12 @@ interface DeviceApi {
   + use() : void
   + getConsumption() : Map<ConsumptionType, Double>
 }
-class DeviceProxy <<Proxy>> {
+class DeviceProxy {
   - device : Device
   - person : Person
   + use() : void
 }
-class SmartHomeFacade <<Facade>> {
+class SmartHomeFacade {
   + turnOffNonEssential() : void
   + closeWindows() : void
   + getTotalConsumption() : Map<ConsumptionType, Double>
@@ -177,12 +177,12 @@ enum EventType {
   FRIDGE_EMPTY
 
 }
-class EventManager <<Observer>> {
+class EventManager {
   - handlers : Map<EventType, EventHandler>
   - history : List<Event>
   + publish(e : Event) : void
 }
-abstract class EventHandler <<Chain of Responsibility>> {
+abstract class EventHandler {
   - next : EventHandler
   + handle(e : Event) : void
   # {abstract} canHandle(e : Event) : boolean
