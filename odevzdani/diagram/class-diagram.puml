@@ -78,6 +78,7 @@ abstract class Device {
   + turnOff() : void
   + use(p : Person) : void
   + getConsumption() : Map<ConsumptionType, Double>
+  + update() : void
   ~ setState(s : DeviceState) : void
 }
 class Fridge {
@@ -148,6 +149,7 @@ class Person {
   - role : Role
   - room : Room
   - allowedDevices : Set<DeviceType>
+  - usage : Map<Device, Integer>
   + moveTo(r : Room) : void
   + doActivity() : void
   + canUse(t : DeviceType) : boolean
